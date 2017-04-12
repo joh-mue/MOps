@@ -33,27 +33,27 @@ functions:
   cellcalc:
     handler: cellcalc.handler
     memorySize: 256
-    timeout: 3
+    timeout: 300
 
   # matrixsetup:
   #   handler: matrixsetup.handler
   #   memorySize: 256
-  #   timeout: 3
+  #   timeout: 300
 
   matrixmultiply:
     handler: matrixmultiply.handler
     memorySize: 256
-    timeout: 3
+    timeout: 300
 
   serial-multiplication:
     handler: serial-multiplication.handler
-    memorySize: 256
-    timeout: 3
+    memorySize: 1024
+    timeout: 300
 
   parallel-multiplication:
     handler: parallel-multiplication.handler
     memorySize: 256
-    timeout: 3
+    timeout: 300
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
