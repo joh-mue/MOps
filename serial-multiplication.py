@@ -28,9 +28,9 @@ def handler(event, context):
   return { "status": "done", "result-bucket": bucket, "result-key": matrix_c_key }
 
 def load_matrix(bucket, matrix_key):
-  tmp_filename = '/tmp/' + matrix_key
-  s3_client.download_file(bucket, matrix_key, tmp_filename)
-  with open (tmp_filename, 'rb') as tmp_file:
+  tmp_filepath = '/tmp/' + matrix_key
+  s3_client.download_file(bucket, matrix_key, tmp_filepath)
+  with open (tmp_filepath, 'rb') as tmp_file:
     matrix_data = pickle.load(tmp_file)
   return matrix_data
 
@@ -55,7 +55,7 @@ def calculate_cell(row, column, matrix_a, matrix_b):
 
 
 def write_to_s3(matrix, bucket, key):
-  tmp_filename = '/tmp/' + key
-  with open(tmp_filename, "wb") as tmp_file:
-    pickle.dump(result, file)
-  s3_client.upload_file(tmp_filename, bucket, key)
+  tmp_filepath = '/tmp/' + key
+  with open(tmp_filepath, "wb") as tmp_file:
+    pickle.dump(matrix, tmp_file)
+  s3_client.upload_file(tmp_filepath, bucket, key)
