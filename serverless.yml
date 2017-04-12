@@ -1,15 +1,5 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
 # For full config options, check the docs:
 #    docs.serverless.com
-#
-# Happy Coding!
 
 service: mmultiply
 
@@ -19,25 +9,19 @@ provider:
   stage: prod
   region: eu-central-1
   profile: serverless-admin
-
-# you can overwrite defaults here
-#  stage: dev
-# region: us-east-1
-
-# you can add statements to the Lambda function's IAM Role here
-iamRoleStatements:
-  - Effect: "Allow"
-    Action:
-      - "s3:ListBucket"
-    Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" }]]}
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:ListBucket"
+      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" }]]}
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-matrixes/*"]]}
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-matrix-tests/*"]]}
 
 # you can add packaging information here
 #package:
@@ -48,6 +32,21 @@ iamRoleStatements:
 functions:
   cellcalc:
     handler: cellcalc.handler
+    memorySize: 256
+    timeout: 3
+
+  matrixsetup:
+    handler: matrixsetup.handler
+    memorySize: 256
+    timeout: 3
+
+  matrixmultiply:
+    handler: matrixmultiply.handler
+    memorySize: 256
+    timeout: 3
+
+  serial-multiplication:
+    handler: serial-multiplication.handler
     memorySize: 256
     timeout: 3
 
@@ -64,12 +63,12 @@ functions:
 #      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
+# resources:
+ # Resources:
+   # NewResource:
+     # Type: AWS::S3::Bucket
+     # Properties:
+       # BucketName: jmue-matrixes
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"

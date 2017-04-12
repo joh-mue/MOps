@@ -1,5 +1,10 @@
 '''
 Serverless Python Matrix Multiplication
+
+{
+  
+}
+
 '''
 import boto3
 import json
@@ -7,29 +12,28 @@ import json
 lambda_client = boto3.client('lambda')
 
 def handler(event, context):
-  matrix_a = 
-  matrix_b = 
+  matrix_a = event['matrix-a']
+  matrix_b = event['matrix-b']
 
   load_matrices(matrix_a, matrix_b)
 
-  for row in range(len(matrix_a)):  
+  for row in range(len(matrix_a)):
     for column in range(len(matrix_a[0])):
       # calculate cell
       cell = calculate_cell(row,column, matrix_a, matrix_b)
       # invoke the reducers asynchronously
-      resp = lambda_client.invoke( 
-              FunctionName = r_function_name,
-              InvocationType = 'Event',
-              Payload =  json.dumps({
-                  "bucket": bucket,
-                  "keys": batch,
-                  "jobBucket": bucket,
-                  "jobId": job_id,
-                  "nReducers": n_reducers, 
-                  "stepId": step_id, 
-                  "reducerId": i 
-              })
-          )
+      response = lambda_client.invoke(
+                FunctionName="mmultiply-prod-cellcalc",
+                InvocationType='RequestResponse',
+                LogType='Tail',
+                Payload=json.dumps({
+                    "column": 4,
+                    "row": 4,
+                    "matrix_a": "test-matrix-C-100",
+                    "matrix_b": "test-matrix-C-100",
+                    "target": "jmue-matrixes"
+                })
+            )
       print resp
       print "[",cell,"]",
     print ""

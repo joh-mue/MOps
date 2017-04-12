@@ -1,0 +1,20 @@
+mmultiply event
+{
+  "column": 0,
+  "row": 0,
+  "location_of_matrix_a": "location_a",
+  "location_of_matrix_b": "location_b"
+}
+
+cellcalc event
+{
+  "row_number": 0,
+  "column_number": 0,
+  "cells_location": "location"
+}
+
+mcombine event
+{
+  "cells_location": "cell location",
+  "target_location": "target location"
+}
