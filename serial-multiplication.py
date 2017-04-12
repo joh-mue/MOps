@@ -23,7 +23,7 @@ def handler(event, context):
   matrix_b = load_matrix(bucket, matrix_b_key)
   matrix_c = multiply(matrix_a, matrix_b)
 
-  write_matrix_to_s3(matrix_c, bucket, matrix_c_key)
+  write_to_s3(matrix_c, bucket, matrix_c_key)
 
   return { "status": "done", "result-bucket": bucket, "result-key": matrix_c_key }
 
@@ -40,18 +40,19 @@ def multiply(matrix_a, matrix_b):
   matrix_c = []
 
   for row in range(result_size):
-    row = []
+    row_values = []
     for column in range(result_size):
       cell = calculate_cell(row, column, matrix_a, matrix_b)
-      row.append(cell)
-    matrix_c.append(row)
+      row_values.append(cell)
+    matrix_c.append(row_values)
   return matrix_c
 
 def calculate_cell(row, column, matrix_a, matrix_b):
   cell = 0
-  for y in range(len(matrix_a[0]))
+  for y in range(len(matrix_a[0])):
     cell += matrix_a[row][y] * matrix_b[y][column]
   return cell
+
 
 def write_to_s3(matrix, bucket, key):
   tmp_filename = '/tmp/' + key
