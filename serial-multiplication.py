@@ -19,15 +19,16 @@ def handler(event, context):
   matrix_b_key = event['matrix-b-key']
   matrix_c_key = event['matrix-c-key']
 
-  matrix_a = load_matrix(bucket, matrix_a_key)
-  matrix_b = load_matrix(bucket, matrix_b_key)
+  matrix_a = load_from_s3(bucket, matrix_a_key)
+  matrix_b = load_from_s3(bucket, matrix_b_key)
   matrix_c = multiply(matrix_a, matrix_b)
 
   write_to_s3(matrix_c, bucket, matrix_c_key)
 
   return { "status": "done", "result-bucket": bucket, "result-key": matrix_c_key }
 
-def load_matrix(bucket, matrix_key):
+
+def load_from_s3(bucket, matrix_key):
   tmp_filepath = '/tmp/' + matrix_key
   s3_client.download_file(bucket, matrix_key, tmp_filepath)
   with open (tmp_filepath, 'rb') as tmp_file:
@@ -54,8 +55,8 @@ def calculate_cell(row, column, matrix_a, matrix_b):
   return cell
 
 
-def write_to_s3(matrix, bucket, key):
+def write_to_s3(data, bucket, key):
   tmp_filepath = '/tmp/' + key
   with open(tmp_filepath, "wb") as tmp_file:
-    pickle.dump(matrix, tmp_file)
+    pickle.dump(data, tmp_file)
   s3_client.upload_file(tmp_filepath, bucket, key)

@@ -2,11 +2,12 @@
 Python Cell Calculator for Matrix Multiplication
 
 {
-  matrix_a: "matrix_A001",
-  matrib_b: "matrix_B001",
-  row: 1, use matrix notation
-  column: 1, use matrix notation
-  target: "jmue-matrixes"
+  "matrix-a-key": "matrix_A001",
+  "matrix-b-key": "matrix_B001",
+  "matrix-c-key": "matrix_C001",
+  "row": 1, use matrix notation
+  "column": 1, use matrix notation
+  "bucket": "jmue-matrix-tests"
 }
 '''
 import boto3
@@ -16,44 +17,48 @@ import pickle
 s3_client = boto3.client('s3')
 
 def handler(event, context):
-  matrix_a = event['matrix_a']
-  matrix_b = event['matrix_b']
-  column = event['column'] - 1
-  row = event['row'] - 1
-  print "I got" + ", column " + str(column + 1) + ", row " + str(row + 1) + ", " + matrix_a + ", " + matrix_b
+  bucket = event['bucket']
+  matrix_a_key = event['matrix-a-key']
+  matrix_b_key = event['matrix-b-key']
+  matrix_c_key = event['matrix-c-key']
 
-  matrix_a_data = load_from_s3(matrix_a)
-  matrix_b_data = load_from_s3(matrix_b)
+  print event
   
-  cell = calculate_cell(row, column, matrix_a_data, matrix_b_data)
-  print cell
+  # column and row are given in Matrixnotation, not array notation
+  row = event['row']
+  column = event['column']
   
-  bucket = event['target']
-  key = "C_" + str(column) + "-" + str(row)
-  write_to_s3(bucket, key, cell)
+  matrix_a = load_from_s3(bucket, matrix_a_key)
+  matrix_b = load_from_s3(bucket, matrix_b_key)
+  
+  cell_value = calculate_cell(row, column, matrix_a, matrix_b)
+  
+  bucket = event['bucket']
+  cell_key = matrix_c_key + "-" + str(row) + "-" + str(column)
+  write_to_s3(cell_value, bucket, cell_key)
 
-  response = {
-    "cell": cell,
-    "target": bucket
-  }
+  return { "cell-value": cell_value, "cell-key": cell_key, "bucket": bucket }
 
-  return response
+
+def load_from_s3(bucket, matrix_key):
+  tmp_filepath = '/tmp/' + matrix_key
+  s3_client.download_file(bucket, matrix_key, tmp_filepath)
+  with open(tmp_filepath, "rb") as tmp_file:
+    matrix_data = pickle.load(tmp_file)
+  return matrix_data
+
 
 def calculate_cell(row, column, matrix_a, matrix_b):
   cell = 0
+  row = row - 1 # translate to matrix notation
+  column = column - 1 # translate to matrix notation
   for y in range(len(matrix_a[0])):
     cell += matrix_a[row][y] * matrix_b[y][column]
   return cell
 
-def load_from_s3(matrix):
-  bucketName = 'jmue-matrixes'
-  s3_client.download_file(bucketName, matrix, '/tmp/' + matrix)
 
-  with open('/tmp/' + matrix, "rb") as file:
-    matrix_data = pickle.load(file)
-  return matrix_data
-
-def write_to_s3(bucket, key, result):
-  with open("/tmp/cell.data", 'wb') as file:
-    pickle.dump(result, file)
-  s3_client.upload_file('/tmp/cell.data', 'jmue-matrixes', key)
+def write_to_s3(data, bucket, key):
+  tmp_filepath = "/tmp/" + key
+  with open(tmp_filepath, 'wb') as tmp_file:
+    pickle.dump(data, tmp_file)
+  s3_client.upload_file(tmp_filepath, bucket, key)
