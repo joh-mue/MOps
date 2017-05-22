@@ -22,6 +22,14 @@ provider:
       Action:
         - "s3:*"
       Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-matrix-tests/*"]]}
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-s3-benchmark"]]}
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-s3-benchmark/*"]]}
 
 # you can add packaging information here
 #package:
@@ -53,6 +61,16 @@ functions:
   parallel-multiplication:
     handler: parallel-multiplication.handler
     memorySize: 256
+    timeout: 300
+
+  s3-benchmark:
+    handler: s3-benchmark.handler
+    memorySize: 1024
+    timeout: 300
+
+  s3-row-benchmark:
+    handler: s3-benchmark.row_handler
+    memorySize: 1024
     timeout: 300
 
 #    The following are a few example events you can configure
