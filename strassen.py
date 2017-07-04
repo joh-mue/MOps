@@ -5,7 +5,7 @@ event[''
   "intermediate": "m_0", 
   "matrix-X": "/strassen-test/X",
   "matrix-Y": "/strassen-test/Y",
-  "result": "result-bucket"
+  "result-bucket": "jmue-matrix-tests"
 }
 
 methods: m_X, strassen, intermediate ,collect
@@ -15,6 +15,7 @@ methods: m_X, strassen, intermediate ,collect
 import boto3
 import json
 import pickle
+import base64
 
 ### NUMPY, SCIPY, SKLEARN MAGIC
 import os
@@ -36,41 +37,24 @@ s3_client = boto3.client('s3')
 
 def handler(event, context):
   if event['op'] == 'strassen-local':
-    matX = load_matrix(event['matrix-X'])
-    matY = load_matrix(event['matrix-Y'])
-
-    intermediates = ["m_" + str(x) for x in range(0,7)]
-    m = []
-    for intermediate in intermediates:
-      intermediate_method = globals()[intermediate]
-      m.append(intermediate_method(matX, matY.transpose()))
-
-    Q00 = m[0] + m[3] - m[4] + m[6]
-    Q01 = m[2] + m[4]
-    Q10 = m[1] + m[3]
-    Q11 = m[0] + m[2] - m[1] + m[5]
-
-    # TODO: use np.concatenate? (https://stackoverflow.com/a/9775378/1619878)
-    result = np.array([np.append(Q00[0], Q01[0]),
-                       np.append(Q00[1], Q01[1]),
-                       np.append(Q10[0], Q11[0]),
-                       np.append(Q10[1], Q11[1])])
-
-    print(result)
-    return { "Strassen correct": np.array_equal(result, matX.dot(matX.transpose())) }
+    return local_strassen(event)
 
   elif event['op'] == 'strassen':
     intermediates = ["m_" + str(x) for x in range(0,7)]
     for intermediate in intermediates:
-      trigger_intermediate(intermediate)
+      response = trigger_intermediate(intermediate, event)
+      print "intermediate lambda call returned:### RESPONSE"
+      print base64.b64decode(response['LogResult'])
+      print "### RESPONSE END"
+    # return intermediate_responses
 
   elif event['op'] == 'intermediate':
     intermediate_method = globals()[event['intermediate']]
     matX = load_matrix(event['matrix-X'])
     matY = load_matrix(event['matrix-Y'])
     result = intermediate_method(matX, matY.transpose())
-    print result
-    # write_to_s3(data, bucket, key, context)
+    # print result
+    write_to_s3(result, event['result-bucket'], event['intermediate'])
 
   elif event['op'] == 'collect':
     print("empty")
@@ -85,7 +69,7 @@ def handler(event, context):
   result = method_to_call()
   '''
 
-def trigger_intermediate(intermediate):
+def trigger_intermediate(intermediate, event):
   response = lambda_client.invoke(
     FunctionName="mmultiply-prod-strassen",
     InvocationType='RequestResponse',
@@ -93,11 +77,12 @@ def trigger_intermediate(intermediate):
     Payload=json.dumps({
       "op": "intermediate",
       "intermediate": intermediate,
-      "matrix-X": "/strassen-test/X",
-      "matrix-Y": "/strassen-test/Y",
-      "result": "result-bucket"
+      "matrix-X": event['matrix-X'],
+      "matrix-Y": event['matrix-Y'],
+      "result-bucket": event['result-bucket']
     })
   )
+  return response
 
 def load_matrix(matrix):
   if matrix == 'dummy':
@@ -167,10 +152,34 @@ def load_from_s3(bucket, matrix_key):
     matrix_data = pickle.load(tmp_file)
   return matrix_data
 
-def write_to_s3(data, bucket, key, context):
+def write_to_s3(data, bucket, key):
   tmp_filepath = '/tmp/' + key
   
   with open(tmp_filepath, 'wb') as tmp_file:
     pickle.dump(data, tmp_file)
 
   s3_client.upload_file(tmp_filepath, bucket, key)
+
+def local_strassen(event):
+  matX = load_matrix(event['matrix-X'])
+  matY = load_matrix(event['matrix-Y'])
+
+  intermediates = ["m_" + str(x) for x in range(0,7)]
+  m = []
+  for intermediate in intermediates:
+    intermediate_method = globals()[intermediate]
+    m.append(intermediate_method(matX, matY.transpose()))
+
+  Q00 = m[0] + m[3] - m[4] + m[6]
+  Q01 = m[2] + m[4]
+  Q10 = m[1] + m[3]
+  Q11 = m[0] + m[2] - m[1] + m[5]
+
+  # TODO: use np.concatenate? (https://stackoverflow.com/a/9775378/1619878)
+  result = np.array([np.append(Q00[0], Q01[0]),
+                     np.append(Q00[1], Q01[1]),
+                     np.append(Q10[0], Q11[0]),
+                     np.append(Q10[1], Q11[1])])
+
+  print(result)
+  return { "Strassen correct": np.array_equal(result, matX.dot(matX.transpose())) }

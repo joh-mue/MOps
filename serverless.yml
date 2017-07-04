@@ -30,6 +30,11 @@ provider:
       Action:
         - "s3:*"
       Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-s3-benchmark/*"]]}
+    - Effect: "Allow"
+      Action:
+        - "lambda:InvokeFunction"
+      Resource:
+        - "*"
 
 # you can add packaging information here
 package:
