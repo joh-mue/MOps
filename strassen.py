@@ -1,11 +1,11 @@
 '''
-event[''
 {
   "op": "intermediate",
   "intermediate": "m_0", 
   "matrix-X": "/strassen-test/X",
   "matrix-Y": "/strassen-test/Y",
-  "result-bucket": "jmue-matrix-tests"
+  "result-bucket": "jmue-matrix-tests",
+  "result-name": "result-name"
 }
 
 methods: m_X, strassen, intermediate ,collect
@@ -43,21 +43,33 @@ def handler(event, context):
     intermediates = ["m_" + str(x) for x in range(0,7)]
     for intermediate in intermediates:
       response = trigger_intermediate(intermediate, event)
-      print "intermediate lambda call returned:### RESPONSE"
-      print base64.b64decode(response['LogResult'])
-      print "### RESPONSE END"
+      # print "intermediate lambda call returned:### RESPONSE"
+      # # print base64.b64decode(response['LogResult'])
+      # print base64.b64decode(response['ResponseMetadata']['RequestId'])
+      # print "### RESPONSE END"
     # return intermediate_responses
+
 
   elif event['op'] == 'intermediate':
     intermediate_method = globals()[event['intermediate']]
     matX = load_matrix(event['matrix-X'])
     matY = load_matrix(event['matrix-Y'])
-    result = intermediate_method(matX, matY.transpose())
+    result = intermediate_method(matX, matY)
     # print result
     write_to_s3(result, event['result-bucket'], event['intermediate'])
 
   elif event['op'] == 'collect':
-    print("empty")
+    Q00 = q_0_0()
+    Q01 = q_0_1()
+    Q10 = q_1_0()
+    Q11 = q_1_1()
+
+    S = np.array([np.append(Q00[0], Q01[0]),
+                  np.append(Q00[1], Q01[1]),
+                  np.append(Q10[0], Q11[0]),
+                  np.append(Q10[1], Q11[1])])
+
+    write_to_s3(S, event['result-bucket'], event['result-name'])
 
   else:
     return { "Error": "invalid op code"}
@@ -68,11 +80,10 @@ def handler(event, context):
   method_to_call = getattr(foo, 'bar')
   result = method_to_call()
   '''
-
 def trigger_intermediate(intermediate, event):
   response = lambda_client.invoke(
     FunctionName="mmultiply-prod-strassen",
-    InvocationType='RequestResponse',
+    InvocationType='Event',
     LogType='Tail',
     Payload=json.dumps({
       "op": "intermediate",
@@ -122,27 +133,27 @@ def m_6(X, Y):
 # RESULT COLLECTION 
 
 def q_0_0():
-  m_0 = load_matrix(m_0)
-  m_3 = load_matrix(m_3)
-  m_4 = load_matrix(m_4)
-  m_6 = load_matrix(m_6)
+  m_0 = load_matrix('m_0')
+  m_3 = load_matrix('m_3')
+  m_4 = load_matrix('m_4')
+  m_6 = load_matrix('m_6')
   return m_0 + m_3 - m_4 + m_6
 
 def q_0_1():
-  m_2 = load_matrix(m_2)
-  m_4 = load_matrix(m_4)
+  m_2 = load_matrix('m_2')
+  m_4 = load_matrix('m_4')
   return m_2 + m_4
 
 def q_1_0():
-  m_1 = load_matrix(m_1)
-  m_3 = load_matrix(m_3)
+  m_1 = load_matrix('m_1')
+  m_3 = load_matrix('m_3')
   return m_1 + m_3
 
 def q_1_1():
-  m_0 = load_matrix(m_0)
-  m_2 = load_matrix(m_2)
-  m_1 = load_matrix(m_1)
-  m_5 = load_matrix(m_5)
+  m_0 = load_matrix('m_0')
+  m_2 = load_matrix('m_2')
+  m_1 = load_matrix('m_1')
+  m_5 = load_matrix('m_5')
   return m_0 + m_2 - m_1 + m_5
 
 def load_from_s3(bucket, matrix_key):
@@ -168,7 +179,7 @@ def local_strassen(event):
   m = []
   for intermediate in intermediates:
     intermediate_method = globals()[intermediate]
-    m.append(intermediate_method(matX, matY.transpose()))
+    m.append(intermediate_method(matX, matY))
 
   Q00 = m[0] + m[3] - m[4] + m[6]
   Q01 = m[2] + m[4]
