@@ -10,9 +10,9 @@
           "States": {
             "m_0": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_0"
-              },
+              "Result": "m_0",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_0_lambda"
             },
             "m_0_lambda": {
@@ -28,9 +28,9 @@
           "States": {
             "m_1": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_1"
-              },
+              "Result": "m_1",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_1_lambda"
             },
             "m_1_lambda": {
@@ -46,9 +46,9 @@
           "States": {
             "m_2": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_2"
-              },
+              "Result": "m_2",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_2_lambda"
             },
             "m_2_lambda": {
@@ -64,9 +64,9 @@
           "States": {
             "m_3": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_3"
-              },
+              "Result": "m_3",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_3_lambda"
             },
             "m_3_lambda": {
@@ -82,9 +82,9 @@
           "States": {
             "m_4": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_4"
-              },
+              "Result": "m_4",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_4_lambda"
             },
             "m_4_lambda": {
@@ -100,9 +100,9 @@
           "States": {
             "m_5": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_5"
-              },
+              "Result": "m_5",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_5_lambda"
             },
             "m_5_lambda": {
@@ -118,9 +118,9 @@
           "States": {
             "m_6": {
               "Type": "Pass",
-              "Result": {
-                "intermediate": "m_6"
-              },
+              "Result": "m_6",
+              "ResultPath": "$.intermediate",
+              "OutputPath": "$",
               "Next": "m_6_lambda"
             },
             "m_6_lambda": {
@@ -132,6 +132,8 @@
           }
         }
       ],
+      "ResultPath": "$.responses",
+      "OutputPath": "$",
       "Next": "Collect"
     },
 

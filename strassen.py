@@ -64,10 +64,9 @@ def handler(event, context):
     Q10 = q_1_0()
     Q11 = q_1_1()
 
-    S = np.array([np.append(Q00[0], Q01[0]),
-                  np.append(Q00[1], Q01[1]),
-                  np.append(Q10[0], Q11[0]),
-                  np.append(Q10[1], Q11[1])])
+    top = np.concatenate((Q00, Q01), axis=1)
+    bottom = np.concatenate((Q10,Q11), axis=1)
+    S = np.concatenate((top, bottom), axis=0)
 
     write_to_s3(S, event['result-bucket'], event['result-name'])
 

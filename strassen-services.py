@@ -1,5 +1,6 @@
 import boto3
 import json
+import pickle
 
 ### NUMPY, SCIPY, SKLEARN MAGIC
 import os
@@ -22,63 +23,48 @@ s3_client = boto3.client('s3')
 
 '''
 {
-  "matrix-X": "matrix-X",
-  "matrix-Y": "matrix-Y",
-  "result-bucket": "result-bucket"
-}
-'''
-def master(event, context):
-  lambda_client = boto3.client('lambda')
-  intermediates = ["m_" + str(x) for x in range(0,7)]
-    for intermediate in intermediates:
-      lambda_client.invoke(
-        FunctionName="mmultiply-prod-strassen",
-            InvocationType='Event',
-            LogType='Tail',
-            Payload=json.dumps({
-                "op": "intermediate",
-                "intermediate": intermediate,
-                "matrix-X": event['matrix-X'],
-                "matrix-Y": event['matrix-Y'],
-                "result-bucket": event['result-bucket']
-            })
-        )
-
-
-'''
-{
-  "matrix-X": "matrix-X",
-  "matrix-Y": "matrix-Y",
-  "result-bucket": "result-bucket",
-  "intermediate": "m_0"
+  "matA": {
+    "bucket": "jmue-matrix-tests",
+    "key": "sq-staircase1000"
+  },
+  "matB": {
+      "bucket": "jmue-matrix-tests",
+      "key": "sq-staircase1000"
+  },
+  "result": {
+      "bucket": "jmue-matrix-tests",
+      "key": "staircase1000-result"
+  },
+  "intermediate": "m_*"
 }
 '''
 def intermediate(event, context):
   intermediate_method = globals()[event['intermediate']]
-  matX = load_matrix(event['matrix-X'])
-  matY = load_matrix(event['matrix-Y'])
-  result = intermediate_method(matX, matY)
+  matA = load_matrix(event['matA'])
+  matB = load_matrix(event['matB'])
+  result = intermediate_method(matA, matB)
   # print result
-  write_to_s3(result, event['result-bucket'], event['intermediate'])
+  write_to_s3(result, event['result']['bucket'], event['intermediate'])
 
 '''
 {
-  "result-bucket": "result-bucket",
-  "result-name": "result-name"
+  "result": {
+    "bucket": "jmue-matrix-tests",
+    "key": "staircase1000-result"
+  }
 }
 '''
 def collect(event, context):
-  Q00 = q_0_0()
-  Q01 = q_0_1()
-  Q10 = q_1_0()
-  Q11 = q_1_1()
+  Q00 = q_0_0(event['result']['bucket'])
+  Q01 = q_0_1(event['result']['bucket'])
+  Q10 = q_1_0(event['result']['bucket'])
+  Q11 = q_1_1(event['result']['bucket'])
 
-  S = np.array([np.append(Q00[0], Q01[0]),
-                np.append(Q00[1], Q01[1]),
-                np.append(Q10[0], Q11[0]),
-                np.append(Q10[1], Q11[1])])
+  top = np.concatenate((Q00, Q01), axis=1)
+  bottom = np.concatenate((Q10,Q11), axis=1)
+  S = np.concatenate((top, bottom), axis=0)
 
-  write_to_s3(S, event['result-bucket'], event['result-name'])
+  write_to_s3(S, event['result']['bucket'], event['result']['key'])
 
 # INTERMEDIATE
 
@@ -105,28 +91,28 @@ def m_6(X, Y):
 
 # COLLECTOR
 
-def q_0_0():
-  m_0 = load_matrix('m_0')
-  m_3 = load_matrix('m_3')
-  m_4 = load_matrix('m_4')
-  m_6 = load_matrix('m_6')
+def q_0_0(bucket):
+  m_0 = load_matrix({ 'bucket': bucket, 'key': 'm_0'})
+  m_3 = load_matrix({ 'bucket': bucket, 'key': 'm_3'})
+  m_4 = load_matrix({ 'bucket': bucket, 'key': 'm_4'})
+  m_6 = load_matrix({ 'bucket': bucket, 'key': 'm_6'})
   return m_0 + m_3 - m_4 + m_6
 
-def q_0_1():
-  m_2 = load_matrix('m_2')
-  m_4 = load_matrix('m_4')
+def q_0_1(bucket):
+  m_2 = load_matrix({ 'bucket': bucket, 'key': 'm_2'})
+  m_4 = load_matrix({ 'bucket': bucket, 'key': 'm_4'})
   return m_2 + m_4
 
-def q_1_0():
-  m_1 = load_matrix('m_1')
-  m_3 = load_matrix('m_3')
+def q_1_0(bucket):
+  m_1 = load_matrix({ 'bucket': bucket, 'key': 'm_1'})
+  m_3 = load_matrix({ 'bucket': bucket, 'key': 'm_3'})
   return m_1 + m_3
 
-def q_1_1():
-  m_0 = load_matrix('m_0')
-  m_2 = load_matrix('m_2')
-  m_1 = load_matrix('m_1')
-  m_5 = load_matrix('m_5')
+def q_1_1(bucket):
+  m_0 = load_matrix({ 'bucket': bucket, 'key': 'm_0'})
+  m_2 = load_matrix({ 'bucket': bucket, 'key': 'm_2'})
+  m_1 = load_matrix({ 'bucket': bucket, 'key': 'm_1'})
+  m_5 = load_matrix({ 'bucket': bucket, 'key': 'm_5'})
   return m_0 + m_2 - m_1 + m_5
 
 # HELPERS
@@ -136,8 +122,8 @@ def load_matrix(matrix):
     return np.array([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]])
   else:
     # TODO: use download_fileobj so no file has to be written
-    s3_client.download_file('jmue-matrix-tests', matrix, '/tmp/' + matrix)
-    return np.load('/tmp/' + matrix)
+    s3_client.download_file(matrix['bucket'], matrix['key'], '/tmp/' + matrix['key'])
+    return np.load('/tmp/' + matrix['key'])
 
 def split4(array, col, row):
   cols, rows = array.shape

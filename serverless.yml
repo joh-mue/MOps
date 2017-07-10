@@ -50,44 +50,11 @@ package:
     - scipy*/**
     - sklearn/**
     - test-files/**
+    - strassen-test-script.py
+    - strassen-step-function-workflow.asl
 #  artifact: my-service-code.zip
 
 functions:
-  cellcalc:
-    handler: cellcalc.handler
-    memorySize: 256
-    timeout: 300
-
-  # matrixsetup:
-  #   handler: matrixsetup.handler
-  #   memorySize: 256
-  #   timeout: 300
-
-  matrixmultiply:
-    handler: matrixmultiply.handler
-    memorySize: 256
-    timeout: 300
-
-  serial-multiplication:
-    handler: serial-multiplication.handler
-    memorySize: 1536
-    timeout: 300
-
-  parallel-multiplication:
-    handler: parallel-multiplication.handler
-    memorySize: 256
-    timeout: 300
-
-  s3-benchmark:
-    handler: s3-benchmark.handler
-    memorySize: 1024
-    timeout: 300
-
-  s3-row-benchmark:
-    handler: s3-benchmark.row_handler
-    memorySize: 1024
-    timeout: 300
-
   strassen:
     handler: strassen.handler
     package:
@@ -95,19 +62,14 @@ functions:
         - lib/**
         - numpy/**
         - numpy-1.13.0-py2.7.egg-info/**
-        - scikit_learn-0.18.2.dist-info/**
-        - scipy/**
-        - scipy-0.19.0-py2.7.egg-info/**
-        - sklearn/**
+        # - scikit_learn-0.18.2.dist-info/**
+        # - scipy/**
+        # - scipy-0.19.0-py2.7.egg-info/**
+        # - sklearn/**
     memorySize: 1024
     timeout: 300
 
   # MULTI LAMBDA Design
-
-  strassen-master:
-    handler: strassen-services.master
-    memorySize: 1024
-    timeout: 300
 
   strassen-intermediate:
     handler: strassen-services.intermediate
@@ -116,10 +78,10 @@ functions:
         - lib/**
         - numpy/**
         - numpy-1.13.0-py2.7.egg-info/**
-        - scikit_learn-0.18.2.dist-info/**
-        - scipy/**
-        - scipy-0.19.0-py2.7.egg-info/**
-        - sklearn/**
+        # - scikit_learn-0.18.2.dist-info/**
+        # - scipy/**
+        # - scipy-0.19.0-py2.7.egg-info/**
+        # - sklearn/**
     memorySize: 1024
     timeout: 300
 
@@ -130,10 +92,10 @@ functions:
         - lib/**
         - numpy/**
         - numpy-1.13.0-py2.7.egg-info/**
-        - scikit_learn-0.18.2.dist-info/**
-        - scipy/**
-        - scipy-0.19.0-py2.7.egg-info/**
-        - sklearn/**
+        # - scikit_learn-0.18.2.dist-info/**
+        # - scipy/**
+        # - scipy-0.19.0-py2.7.egg-info/**
+        # - sklearn/**
     memorySize: 1024
     timeout: 300
 
