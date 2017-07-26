@@ -1,22 +1,9 @@
 import boto3
 import json
 
-### NUMPY, SCIPY, SKLEARN MAGIC
 import os
-import ctypes
 
-import platform
-if platform.system() != 'Darwin': # don't do this on my local machine
-  for d, _, files in os.walk('lib'):
-      for f in files:
-          if f.endswith('.a'):
-              continue
-          ctypes.cdll.LoadLibrary(os.path.join(d, f))
-
-import numpy as np
-### NUMPY, SCIPY, SKLEARN MAGIC END
-
-lambda_client = boto3.client('lambda')
+sfn_client = boto3.client('stepfunctions')
 
 '''
 {
@@ -74,3 +61,4 @@ def start_execution(i, j, k, event):
     name=event['executionName'],
     input=sfn_input
   )
+  print response['executionArn']
