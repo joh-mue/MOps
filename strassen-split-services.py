@@ -123,37 +123,38 @@ def partition(matrix, x, y):
 '''
 def collect(event, context):
   result = event['result']
-  Q00 = q_0_0(result['bucket'], result['folder'], event['split'], event['unit'])
-  Q01 = q_0_1(result['bucket'], result['folder'], event['split'], event['unit'])
-  Q10 = q_1_0(result['bucket'], result['folder'], event['split'], event['unit'])
-  Q11 = q_1_1(result['bucket'], result['folder'], event['split'], event['unit'])
 
-  prefix = "S{}_U{}_".format(event['split'], event['unit'])
-  aws.write_to_s3(Q00, result['bucket'], result['folder'], prefix + "X00", s3_client)
-  aws.write_to_s3(Q01, result['bucket'], result['folder'], prefix + "X01", s3_client)
-  aws.write_to_s3(Q10, result['bucket'], result['folder'], prefix + "X10", s3_client)
-  aws.write_to_s3(Q11, result['bucket'], result['folder'], prefix + "X11", s3_client)
+  X00 = x_0_0(result['bucket'], result['folder'], event['split'], event['unit'])
+  X01 = x_0_1(result['bucket'], result['folder'], event['split'], event['unit'])
+  X10 = x_1_0(result['bucket'], result['folder'], event['split'], event['unit'])
+  X11 = x_1_1(result['bucket'], result['folder'], event['split'], event['unit'])
+
+  base = "S{}_X{}_U{}".format(event['split'], "{}", event['unit'])
+  aws.write_to_s3(X00, result['bucket'], result['folder'], base.format("00"), s3_client)
+  aws.write_to_s3(X01, result['bucket'], result['folder'], base.format("01"), s3_client)
+  aws.write_to_s3(X10, result['bucket'], result['folder'], base.format("10"), s3_client)
+  aws.write_to_s3(X11, result['bucket'], result['folder'], base.format("11"), s3_client)
 
 # COLLECTOR
 
-def q_0_0(bucket, folder, split, unit):
+def x_0_0(bucket, folder, split, unit):
   m_0 = load_interm_result(bucket, folder, split, unit, 'm_0')
   m_3 = load_interm_result(bucket, folder, split, unit, 'm_3')
   m_4 = load_interm_result(bucket, folder, split, unit, 'm_4')
   m_6 = load_interm_result(bucket, folder, split, unit, 'm_6')
   return m_0 + m_3 - m_4 + m_6
 
-def q_0_1(bucket, folder, split, unit):
+def x_0_1(bucket, folder, split, unit):
   m_2 = load_interm_result(bucket, folder, split, unit, 'm_2')
   m_4 = load_interm_result(bucket, folder, split, unit, 'm_4')
   return m_2 + m_4
 
-def q_1_0(bucket, folder, split, unit):
+def x_1_0(bucket, folder, split, unit):
   m_1 = load_interm_result(bucket, folder, split, unit, 'm_1')
   m_3 = load_interm_result(bucket, folder, split, unit, 'm_3')
   return m_1 + m_3
 
-def q_1_1(bucket, folder, split, unit):
+def x_1_1(bucket, folder, split, unit):
   m_0 = load_interm_result(bucket, folder, split, unit, 'm_0')
   m_2 = load_interm_result(bucket, folder, split, unit, 'm_2')
   m_1 = load_interm_result(bucket, folder, split, unit, 'm_1')
