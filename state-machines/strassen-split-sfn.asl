@@ -18,7 +18,7 @@
             "m_0_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -36,7 +36,7 @@
             "m_1_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -54,7 +54,7 @@
             "m_2_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -72,7 +72,7 @@
             "m_3_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -90,7 +90,7 @@
             "m_4_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -108,7 +108,7 @@
             "m_5_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -126,7 +126,7 @@
             "m_6_lambda": {
               "Type": "Task",
               "Resource": 
-                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
               "End": true
             }
           }
@@ -139,7 +139,7 @@
 
     "Collect": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-collector",
+      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-collector",
       "End": true
     }
   }
