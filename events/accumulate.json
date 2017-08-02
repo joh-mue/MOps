@@ -1,0 +1,15 @@
+{
+  "matA": {
+    "bucket": "jmue-matrix-tests",
+    "folder": "sc4000",
+    "rows": 4000,
+    "columns": 4000,
+    "split": {
+      "x1": 2000,
+      "y1": 2000,
+      "x2": 4000,
+      "y2": 4000
+    },
+      "splitSizeLimit": 2000
+  }
+}

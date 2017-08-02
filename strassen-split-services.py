@@ -1,6 +1,7 @@
 import boto3
 import json
 import pickle
+import aws
 
 ### NUMPY, SCIPY, SKLEARN MAGIC
 import os
@@ -60,14 +61,14 @@ s3_client = boto3.client('s3')
 def intermediate(event, context):
   intermediate_method = globals()[event['intermediate']]
   result = intermediate_method(event['matA'], event['matB'])
-  # print result
-  write_to_s3(
+  key = "S{}_U{}_{}".format(event['split'], event['unit'], event['intermediate'])
+  aws.write_to_s3(
     data=result,
     bucket=event['result']['bucket'],
     folder=event['result']['folder'],
-    key=event['intermediate']
+    key=key,
+    s3_client=s3_client
     )
-
 # INTERMEDIATE METHODS
 
 #  _ _  _ _ 
@@ -100,27 +101,19 @@ def m_6(X, Y):
 
 
 def partition(matrix, x, y):
-  print("Loading partition " + matrix['folder'] + "_" + str(x) + "_" + str(y))
+  print("Loading partition {}_{}_{}".format(matrix['folder'], x, y))
   split = matrix['split']
   x += split['x1']/1000
   y += split['y1']/1000
   partition_factor = ((split['x2']-split['x1'])/2)/1000 # length of split us twice the size of a partition
 
-  filename = "m_" + str(partition_factor*x) + "_" + str(partition_factor*y) + ".npy"
-  key = matrix['folder'] + "/" + filename # e.g. m_0_0.npy
-
-  if not os.path.exists('/tmp/' + matrix['folder']):
-    os.mkdir('/tmp/' + matrix['folder'])
-  
-  s3_client.download_file(matrix['bucket'], key, '/tmp/' + key)
-  return np.load('/tmp/' + key)
+  filename = "m_{}_{}.npy".format(partition_factor*x, partition_factor*y)
+  path = aws.download_s3_file(matrix['bucket'], matrix['folder'], filename, s3_client)
+  return np.load(path)
 
 
 '''
 ### COLLECTOR
-
-
-
 {
   "result": {
     "bucket": "jmue-matrix-tests",
@@ -129,53 +122,59 @@ def partition(matrix, x, y):
 }
 '''
 def collect(event, context):
-  Q00 = q_0_0(event['result']['bucket'])
-  Q01 = q_0_1(event['result']['bucket'])
-  Q10 = q_1_0(event['result']['bucket'])
-  Q11 = q_1_1(event['result']['bucket'])
+  result = event['result']
+  Q00 = q_0_0(result['bucket'], result['folder'], event['split'], event['unit'])
+  Q01 = q_0_1(result['bucket'], result['folder'], event['split'], event['unit'])
+  Q10 = q_1_0(result['bucket'], result['folder'], event['split'], event['unit'])
+  Q11 = q_1_1(result['bucket'], result['folder'], event['split'], event['unit'])
 
-  top = np.concatenate((Q00, Q01), axis=1)
-  bottom = np.concatenate((Q10,Q11), axis=1)
-  S = np.concatenate((top, bottom), axis=0)
-
-  write_to_s3(S, event['result']['bucket'], event['result']['folder'])
+  prefix = "S{}_U{}_".format(event['split'], event['unit'])
+  aws.write_to_s3(Q00, result['bucket'], result['folder'], prefix + "X00", s3_client)
+  aws.write_to_s3(Q01, result['bucket'], result['folder'], prefix + "X01", s3_client)
+  aws.write_to_s3(Q10, result['bucket'], result['folder'], prefix + "X10", s3_client)
+  aws.write_to_s3(Q11, result['bucket'], result['folder'], prefix + "X11", s3_client)
 
 # COLLECTOR
 
-def q_0_0(bucket):
-  m_0 = load_matrix({ 'bucket': bucket, 'key': 'm_0'})
-  m_3 = load_matrix({ 'bucket': bucket, 'key': 'm_3'})
-  m_4 = load_matrix({ 'bucket': bucket, 'key': 'm_4'})
-  m_6 = load_matrix({ 'bucket': bucket, 'key': 'm_6'})
+def q_0_0(bucket, folder, split, unit):
+  m_0 = load_interm_result(bucket, folder, split, unit, 'm_0')
+  m_3 = load_interm_result(bucket, folder, split, unit, 'm_3')
+  m_4 = load_interm_result(bucket, folder, split, unit, 'm_4')
+  m_6 = load_interm_result(bucket, folder, split, unit, 'm_6')
   return m_0 + m_3 - m_4 + m_6
 
-def q_0_1(bucket):
-  m_2 = load_matrix({ 'bucket': bucket, 'key': 'm_2'})
-  m_4 = load_matrix({ 'bucket': bucket, 'key': 'm_4'})
+def q_0_1(bucket, folder, split, unit):
+  m_2 = load_interm_result(bucket, folder, split, unit, 'm_2')
+  m_4 = load_interm_result(bucket, folder, split, unit, 'm_4')
   return m_2 + m_4
 
-def q_1_0(bucket):
-  m_1 = load_matrix({ 'bucket': bucket, 'key': 'm_1'})
-  m_3 = load_matrix({ 'bucket': bucket, 'key': 'm_3'})
+def q_1_0(bucket, folder, split, unit):
+  m_1 = load_interm_result(bucket, folder, split, unit, 'm_1')
+  m_3 = load_interm_result(bucket, folder, split, unit, 'm_3')
   return m_1 + m_3
 
-def q_1_1(bucket):
-  m_0 = load_matrix({ 'bucket': bucket, 'key': 'm_0'})
-  m_2 = load_matrix({ 'bucket': bucket, 'key': 'm_2'})
-  m_1 = load_matrix({ 'bucket': bucket, 'key': 'm_1'})
-  m_5 = load_matrix({ 'bucket': bucket, 'key': 'm_5'})
+def q_1_1(bucket, folder, split, unit):
+  m_0 = load_interm_result(bucket, folder, split, unit, 'm_0')
+  m_2 = load_interm_result(bucket, folder, split, unit, 'm_2')
+  m_1 = load_interm_result(bucket, folder, split, unit, 'm_1')
+  m_5 = load_interm_result(bucket, folder, split, unit, 'm_5')
   return m_0 + m_2 - m_1 + m_5
 
+def load_interm_result(bucket, folder, split, unit, m_x):
+  filename = "S{}_U{}_{}.npy".format(split, unit, m_x)
+  
+  path = aws.download_s3_file(bucket, folder, filename, s3_client)
+  return np.load(path)
 
 
 # HELPERS
 
-def write_to_s3(data, bucket, folder, key):
-  if not os.path.exists('/tmp/' + folder):
-    os.mkdir('/tmp/' + folder)
+# def write_to_s3(data, bucket, folder, key):
+#   if not os.path.exists('/tmp/' + folder):
+#     os.mkdir('/tmp/' + folder)
   
-  tmp_filepath = '/tmp/' + folder + "/" + key + ".npy"
-  with open(tmp_filepath, 'wb') as tmp_file:
-    np.save(tmp_filepath, data)
+#   tmp_filepath = "/tmp/{}/{}.npy".format(folder, key)
+#   with open(tmp_filepath, 'wb') as tmp_file:
+#     np.save(tmp_filepath, data)
 
-  s3_client.upload_file(tmp_filepath, bucket, folder + "/" + key)
+#   s3_client.upload_file(tmp_filepath, bucket, folder + "/" + key)

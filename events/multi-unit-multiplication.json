@@ -1,0 +1,21 @@
+{
+  "stateMachineArn": "state-machine-arn",
+  "executionName": "execution-name",
+  "matA": {
+    "bucket": "jmue-matrix-tests",
+    "folder": "sc4000",
+    "rows": 4000,
+    "columns": 4000
+  },
+  "matB": {
+      "bucket": "jmue-matrix-tests",
+      "folder": "sc4000transp",
+      "rows": 4000,
+      "columns": 4000
+  },
+  "result": {
+      "bucket": "jmue-matrix-tests",
+      "folder": "sc4000-result"
+  },
+  "splitSizeLimit": 2000
+}

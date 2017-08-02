@@ -51,7 +51,8 @@ package:
     - sklearn/**
     - test-files/**
     - strassen-test-script.py
-    - strassen-step-function-workflow.asl
+    - strassen-sfn.asl
+    - strassen-split-sfn.asl
 #  artifact: my-service-code.zip
 
 functions:
@@ -99,6 +100,11 @@ functions:
     handler: multi-unit-multiplication.handler
     memorySize: 1024
     timeout: 300
+
+  unit-accumulator:
+    handler: unit-accumulator.accumulate
+    memorySize: 1536
+    timeout: 300
   
   strassen-split-intermediate:
     handler: strassen-split-services.intermediate
@@ -110,15 +116,15 @@ functions:
     memorySize: 1024
     timeout: 300
 
-    # strassen-split-collector:
-    # handler: strassen-split-services.collect
-    # package:
-    #   include:
-    #     - lib/**
-    #     - numpy/**
-    #     - numpy-1.13.0-py2.7.egg-info/**
-    # memorySize: 1024
-    # timeout: 300
+  strassen-split-collector:
+    handler: strassen-split-services.collect
+    package:
+      include:
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
 
 
 #    The following are a few example events you can configure
