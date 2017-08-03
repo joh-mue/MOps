@@ -55,13 +55,13 @@ s3_client = boto3.client('s3')
       "folder": "sc4000-result"
   },
   "splitSizeLimit": 2000,
-  "intermediate": "m_*"
+  "intermediate": "2"
 }
 '''
 def intermediate(event, context):
-  intermediate_method = globals()[event['intermediate']]
+  intermediate_method = globals()["m_" + str(event['intermediate'])]
   result = intermediate_method(event['matA'], event['matB'])
-  key = "S{}_U{}_{}".format(event['split'], event['unit'], event['intermediate'])
+  key = "S{}_U{}_m{}".format(event['split'], event['unit'], event['intermediate'])
   aws.write_to_s3(
     data=result,
     bucket=event['result']['bucket'],
@@ -138,44 +138,31 @@ def collect(event, context):
 # COLLECTOR
 
 def x_0_0(bucket, folder, split, unit):
-  m_0 = load_interm_result(bucket, folder, split, unit, 'm_0')
-  m_3 = load_interm_result(bucket, folder, split, unit, 'm_3')
-  m_4 = load_interm_result(bucket, folder, split, unit, 'm_4')
-  m_6 = load_interm_result(bucket, folder, split, unit, 'm_6')
+  m_0 = load_interm_result(bucket, folder, split, unit, 0)
+  m_3 = load_interm_result(bucket, folder, split, unit, 3)
+  m_4 = load_interm_result(bucket, folder, split, unit, 4)
+  m_6 = load_interm_result(bucket, folder, split, unit, 6)
   return m_0 + m_3 - m_4 + m_6
 
 def x_0_1(bucket, folder, split, unit):
-  m_2 = load_interm_result(bucket, folder, split, unit, 'm_2')
-  m_4 = load_interm_result(bucket, folder, split, unit, 'm_4')
+  m_2 = load_interm_result(bucket, folder, split, unit, 2)
+  m_4 = load_interm_result(bucket, folder, split, unit, 4)
   return m_2 + m_4
 
 def x_1_0(bucket, folder, split, unit):
-  m_1 = load_interm_result(bucket, folder, split, unit, 'm_1')
-  m_3 = load_interm_result(bucket, folder, split, unit, 'm_3')
+  m_1 = load_interm_result(bucket, folder, split, unit, 1)
+  m_3 = load_interm_result(bucket, folder, split, unit, 3)
   return m_1 + m_3
 
 def x_1_1(bucket, folder, split, unit):
-  m_0 = load_interm_result(bucket, folder, split, unit, 'm_0')
-  m_2 = load_interm_result(bucket, folder, split, unit, 'm_2')
-  m_1 = load_interm_result(bucket, folder, split, unit, 'm_1')
-  m_5 = load_interm_result(bucket, folder, split, unit, 'm_5')
+  m_0 = load_interm_result(bucket, folder, split, unit, 0)
+  m_2 = load_interm_result(bucket, folder, split, unit, 2)
+  m_1 = load_interm_result(bucket, folder, split, unit, 1)
+  m_5 = load_interm_result(bucket, folder, split, unit, 5)
   return m_0 + m_2 - m_1 + m_5
-
-def load_interm_result(bucket, folder, split, unit, m_x):
-  filename = "S{}_U{}_{}.npy".format(split, unit, m_x)
   
+def load_interm_result(bucket, folder, split, unit, x):
+  filename = "S{}_U{}_m{}".format(split, unit, x)
   path = aws.download_s3_file(bucket, folder, filename, s3_client)
   return np.load(path)
 
-
-# HELPERS
-
-# def write_to_s3(data, bucket, folder, key):
-#   if not os.path.exists('/tmp/' + folder):
-#     os.mkdir('/tmp/' + folder)
-  
-#   tmp_filepath = "/tmp/{}/{}.npy".format(folder, key)
-#   with open(tmp_filepath, 'wb') as tmp_file:
-#     np.save(tmp_filepath, data)
-
-#   s3_client.upload_file(tmp_filepath, bucket, folder + "/" + key)

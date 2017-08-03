@@ -1,286 +1,306 @@
 {
+  "StartAt": "Units",
   "States": {
     "Accumulate": {
-      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-accumulate",
       "End": true,
+      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-accumulate",
       "Type": "Task"
     },
     "Units": {
       "Branches": [
         {
+          "StartAt": "unit0",
           "States": {
-            "0Intermediates": {
+            "U0_Collect": {
+              "End": true,
+              "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-collector",
+              "Type": "Task"
+            },
+            "U0_Intermediate": {
               "Branches": [
                 {
+                  "StartAt": "U0_m0",
                   "States": {
-                    "0_m0": {
+                    "U0_m0": {
+                      "Next": "U0_m0_lambda",
                       "OutputPath": "$",
+                      "Result": 0,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m0",
-                      "Next": "0_m0_lambda"
+                      "Type": "Pass"
                     },
-                    "0_m0_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U0_m0_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m0"
+                  }
                 },
                 {
+                  "StartAt": "U0_m1",
                   "States": {
-                    "0_m1": {
+                    "U0_m1": {
+                      "Next": "U0_m1_lambda",
                       "OutputPath": "$",
+                      "Result": 1,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m1",
-                      "Next": "0_m1_lambda"
+                      "Type": "Pass"
                     },
-                    "0_m1_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U0_m1_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m1"
+                  }
                 },
                 {
+                  "StartAt": "U0_m2",
                   "States": {
-                    "0_m2": {
+                    "U0_m2": {
+                      "Next": "U0_m2_lambda",
                       "OutputPath": "$",
+                      "Result": 2,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m2",
-                      "Next": "0_m2_lambda"
+                      "Type": "Pass"
                     },
-                    "0_m2_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U0_m2_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m2"
+                  }
                 },
                 {
+                  "StartAt": "U0_m3",
                   "States": {
-                    "0_m3_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
-                      "End": true,
-                      "Type": "Task"
-                    },
-                    "0_m3": {
+                    "U0_m3": {
+                      "Next": "U0_m3_lambda",
                       "OutputPath": "$",
+                      "Result": 3,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m3",
-                      "Next": "0_m3_lambda"
+                      "Type": "Pass"
+                    },
+                    "U0_m3_lambda": {
+                      "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
+                      "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m3"
+                  }
                 },
                 {
+                  "StartAt": "U0_m4",
                   "States": {
-                    "0_m4": {
+                    "U0_m4": {
+                      "Next": "U0_m4_lambda",
                       "OutputPath": "$",
+                      "Result": 4,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m4",
-                      "Next": "0_m4_lambda"
+                      "Type": "Pass"
                     },
-                    "0_m4_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U0_m4_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m4"
+                  }
                 },
                 {
+                  "StartAt": "U0_m5",
                   "States": {
-                    "0_m5": {
+                    "U0_m5": {
+                      "Next": "U0_m5_lambda",
                       "OutputPath": "$",
+                      "Result": 5,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m5",
-                      "Next": "0_m5_lambda"
+                      "Type": "Pass"
                     },
-                    "0_m5_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U0_m5_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m5"
+                  }
                 },
                 {
+                  "StartAt": "U0_m6",
                   "States": {
-                    "0_m6": {
+                    "U0_m6": {
+                      "Next": "U0_m6_lambda",
                       "OutputPath": "$",
+                      "Result": 6,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "0_m6",
-                      "Next": "0_m6_lambda"
+                      "Type": "Pass"
                     },
-                    "0_m6_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U0_m6_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "0_m6"
+                  }
                 }
               ],
-              "Type": "Parallel",
-              "Next": "0Collect"
+              "Next": "U0_Collect",
+              "OutputPath": "$",
+              "ResultPath": "$.responses",
+              "Type": "Parallel"
             },
-            "0Collect": {
-              "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-collector",
-              "End": true,
-              "Type": "Task"
+            "unit0": {
+              "Next": "U0_Intermediate",
+              "OutputPath": "$",
+              "Result": "0",
+              "ResultPath": "$.unit",
+              "Type": "Pass"
             }
-          },
-          "StartAt": "0Intermediates"
+          }
         },
         {
+          "StartAt": "unit1",
           "States": {
-            "1Collect": {
-              "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-collector",
+            "U1_Collect": {
               "End": true,
+              "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-collector",
               "Type": "Task"
             },
-            "1Intermediates": {
+            "U1_Intermediate": {
               "Branches": [
                 {
+                  "StartAt": "U1_m0",
                   "States": {
-                    "1_m0_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
-                      "End": true,
-                      "Type": "Task"
-                    },
-                    "1_m0": {
+                    "U1_m0": {
+                      "Next": "U1_m0_lambda",
                       "OutputPath": "$",
+                      "Result": 0,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m0",
-                      "Next": "1_m0_lambda"
+                      "Type": "Pass"
+                    },
+                    "U1_m0_lambda": {
+                      "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
+                      "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m0"
+                  }
                 },
                 {
+                  "StartAt": "U1_m1",
                   "States": {
-                    "1_m1": {
+                    "U1_m1": {
+                      "Next": "U1_m1_lambda",
                       "OutputPath": "$",
+                      "Result": 1,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m1",
-                      "Next": "1_m1_lambda"
+                      "Type": "Pass"
                     },
-                    "1_m1_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U1_m1_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m1"
+                  }
                 },
                 {
+                  "StartAt": "U1_m2",
                   "States": {
-                    "1_m2": {
+                    "U1_m2": {
+                      "Next": "U1_m2_lambda",
                       "OutputPath": "$",
+                      "Result": 2,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m2",
-                      "Next": "1_m2_lambda"
+                      "Type": "Pass"
                     },
-                    "1_m2_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U1_m2_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m2"
+                  }
                 },
                 {
+                  "StartAt": "U1_m3",
                   "States": {
-                    "1_m3": {
+                    "U1_m3": {
+                      "Next": "U1_m3_lambda",
                       "OutputPath": "$",
+                      "Result": 3,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m3",
-                      "Next": "1_m3_lambda"
+                      "Type": "Pass"
                     },
-                    "1_m3_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U1_m3_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m3"
+                  }
                 },
                 {
+                  "StartAt": "U1_m4",
                   "States": {
-                    "1_m4": {
+                    "U1_m4": {
+                      "Next": "U1_m4_lambda",
                       "OutputPath": "$",
+                      "Result": 4,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m4",
-                      "Next": "1_m4_lambda"
+                      "Type": "Pass"
                     },
-                    "1_m4_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U1_m4_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m4"
+                  }
                 },
                 {
+                  "StartAt": "U1_m5",
                   "States": {
-                    "1_m5": {
+                    "U1_m5": {
+                      "Next": "U1_m5_lambda",
                       "OutputPath": "$",
+                      "Result": 5,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m5",
-                      "Next": "1_m5_lambda"
+                      "Type": "Pass"
                     },
-                    "1_m5_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U1_m5_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m5"
+                  }
                 },
                 {
+                  "StartAt": "U1_m6",
                   "States": {
-                    "1_m6": {
+                    "U1_m6": {
+                      "Next": "U1_m6_lambda",
                       "OutputPath": "$",
+                      "Result": 6,
                       "ResultPath": "$.intermediate",
-                      "Type": "Pass",
-                      "Result": "1_m6",
-                      "Next": "1_m6_lambda"
+                      "Type": "Pass"
                     },
-                    "1_m6_lambda": {
-                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-intermediate",
+                    "U1_m6_lambda": {
                       "End": true,
+                      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate",
                       "Type": "Task"
                     }
-                  },
-                  "StartAt": "1_m6"
+                  }
                 }
               ],
-              "Type": "Parallel",
-              "Next": "1Collect"
+              "Next": "U1_Collect",
+              "OutputPath": "$",
+              "ResultPath": "$.responses",
+              "Type": "Parallel"
+            },
+            "unit1": {
+              "Next": "U1_Intermediate",
+              "OutputPath": "$",
+              "Result": "1",
+              "ResultPath": "$.unit",
+              "Type": "Pass"
             }
-          },
-          "StartAt": "1Intermediates"
+          }
         }
       ],
-      "Type": "Parallel",
-      "Next": "Accumulate"
+      "Next": "Accumulate",
+      "OutputPath": "$",
+      "ResultPath": "$.responses",
+      "Type": "Parallel"
     }
-  },
-  "StartAt": "Units"
+  }
 }

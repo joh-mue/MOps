@@ -1,6 +1,6 @@
 {
-  "stateMachineArn": "arn:aws:states:eu-central-1:146904559692:stateMachine:strassen-multiplication-12",
-  "executionName": "invoke-local",
+  "stateMachineArn": "arn:aws:states:eu-central-1:146904559692:stateMachine:dual-unit-matrix-multiplication",
+  "executionName": "split3-execution-3",
   "matA": {
     "bucket": "jmue-matrix-tests",
     "folder": "sc4000",
@@ -30,6 +30,5 @@
       "folder": "sc4000-result"
   },
   "splitSizeLimit": 2000,
-  "split": 3,
-  "unit": 0
+  "split": 3
 }

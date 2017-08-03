@@ -30,7 +30,6 @@
       "folder": "sc4000-result"
   },
   "splitSizeLimit": 2000,
-  "intermediate": "m_6",
   "split": 3,
   "unit": 0
 }
