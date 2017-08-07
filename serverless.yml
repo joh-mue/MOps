@@ -17,19 +17,8 @@ provider:
     - Effect: "Allow"
       Action:
         - "s3:*"
-      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-matrixes/*"]]}
-    - Effect: "Allow"
-      Action:
-        - "s3:*"
-      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-matrix-tests/*"]]}
-    - Effect: "Allow"
-      Action:
-        - "s3:*"
-      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-s3-benchmark"]]}
-    - Effect: "Allow"
-      Action:
-        - "s3:*"
-      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::jmue-s3-benchmark/*"]]}
+      Resource:
+        - "*"
     - Effect: "Allow"
       Action:
         - "lambda:InvokeFunction"
@@ -103,6 +92,11 @@ functions:
 
   unit-accumulator:
     handler: unit-accumulator.accumulate
+    package:
+      include:
+          - lib/**
+          - numpy/**
+          - numpy-1.13.0-py2.7.egg-info/**
     memorySize: 1536
     timeout: 300
   

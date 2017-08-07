@@ -3,7 +3,7 @@
   "States": {
     "Accumulate": {
       "End": true,
-      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-accumulate",
+      "Resource": "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-accumulator",
       "Type": "Task"
     },
     "Units": {

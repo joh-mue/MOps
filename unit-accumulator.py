@@ -42,7 +42,7 @@ def accumulate(event, context):
       data=final_block,
       bucket=event['result']['bucket'],
       folder=event['result']['folder'],
-      key="X{}{}".format(index[0], index[1]), #TODO absolute not relative block_index needed here
+      key="X{}{}".format(index[0], index[1]),
       s3_client=s3_client
     )
 
@@ -50,7 +50,10 @@ def load_all_partials(block_index, result, split):
   response = s3_client.list_objects_v2(
       Bucket=result['bucket'],
       Prefix="{}/S{}_X{}".format(result['folder'], split, block_index)
-    )
+  )
+
+  if not os.path.exists('/tmp/' + result['folder']):
+    os.mkdir('/tmp/' + result['folder'])
 
   paths = []
   for item in response['Contents']:

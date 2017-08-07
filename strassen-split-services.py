@@ -163,6 +163,6 @@ def x_1_1(bucket, folder, split, unit):
   
 def load_interm_result(bucket, folder, split, unit, x):
   filename = "S{}_U{}_m{}".format(split, unit, x)
+
   path = aws.download_s3_file(bucket, folder, filename, s3_client)
   return np.load(path)
-
