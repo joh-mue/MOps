@@ -8,11 +8,11 @@ import ctypes
 
 import platform
 if platform.system() != 'Darwin': # don't do this on my local machine
-  for d, _, files in os.walk('lib'):
-      for f in files:
-          if f.endswith('.a'):
-              continue
-          ctypes.cdll.LoadLibrary(os.path.join(d, f))
+    for d, _, files in os.walk('lib'):
+        for f in files:
+            if f.endswith('.a'):
+                  continue
+            ctypes.cdll.LoadLibrary(os.path.join(d, f))
 
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
@@ -28,44 +28,42 @@ accumulate.json
 }
 '''
 def accumulate(event, context):
-  for block_index in ["00","01","10","11"]:
-    partial_paths = load_all_partials(block_index, event['result'], event['split'])
-    
-    # add them up
-    final_block = np.zeros(shape=(1000,1000), dtype=np.int)
-    for path in partial_paths:
-      final_block += np.load(path)
+    for block_index in ["00","01","10","11"]:
+        partial_paths = load_all_partials(block_index, event['result'], event['split'])
+        
+        # add them up
+        final_block = np.zeros(shape=(1000,1000), dtype=np.int)
+        for path in partial_paths:
+          final_block += np.load(path)
 
-    index = get_absolute_block_index(block_index, event['result']['split'])
+        index = get_absolute_block_index(block_index, event['result']['split'])
 
-    aws.write_to_s3(
-      data=final_block,
-      bucket=event['result']['bucket'],
-      folder=event['result']['folder'],
-      key="X{}{}".format(index[0], index[1]),
-      s3_client=s3_client
-    )
+        aws.write_to_s3(
+                data=final_block,
+                bucket=event['result']['bucket'],
+                folder=event['result']['folder'],
+                key="X{}{}".format(index[0], index[1]),
+                s3_client=s3_client)
 
 def load_all_partials(block_index, result, split):
-  response = s3_client.list_objects_v2(
-      Bucket=result['bucket'],
-      Prefix="{}/S{}_X{}".format(result['folder'], split, block_index)
-  )
+    response = s3_client.list_objects_v2(
+            Bucket=result['bucket'],
+            Prefix="{}/S{}_X{}".format(result['folder'], split, block_index))
 
-  if not os.path.exists('/tmp/' + result['folder']):
-    os.mkdir('/tmp/' + result['folder'])
+    if not os.path.exists('/tmp/' + result['folder']):
+        os.mkdir('/tmp/' + result['folder'])
 
-  paths = []
-  for item in response['Contents']:
-    local_path = '/tmp/' + item['Key']
-    s3_client.download_file(result['bucket'], item['Key'], local_path)
-    paths.append(local_path)
+    paths = []
+    for item in response['Contents']:
+        local_path = '/tmp/' + item['Key']
+        s3_client.download_file(result['bucket'], item['Key'], local_path)
+        paths.append(local_path)
 
-  return paths
+    return paths
 
 def get_absolute_block_index(block_index, split):
-  x, y = int(block_index[0]), int(block_index[1])
-  x += split['x1']/1000
-  y += split['y1']/1000
-  partition_factor = ((split['x2']-split['x1'])/2)/1000 # length of split us twice the size of a partition
-  return (partition_factor*x, partition_factor*y)
+    x, y = int(block_index[0]), int(block_index[1])
+    x += split['x1']/1000
+    y += split['y1']/1000
+    partition_factor = ((split['x2']-split['x1'])/2)/1000 # length of split us twice the size of a partition
+    return (partition_factor*x, partition_factor*y)

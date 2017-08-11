@@ -24,6 +24,16 @@ provider:
         - "lambda:InvokeFunction"
       Resource:
         - "*"
+    - Effect: "Allow"
+      Action:
+        - "sts:AssumeRole" 
+      Resource:
+        - "arn:aws:iam::146904559692:role/StepFunctionRole"
+    - Effect: "Allow"
+      Action:
+        - "states:*"
+      Resource:
+        - "*"
 
 # you can add packaging information here
 package:
