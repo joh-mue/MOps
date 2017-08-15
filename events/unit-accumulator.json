@@ -11,6 +11,7 @@
       "y2": 4000
     }
   },
-  "splitSizeLimit": 2000,
-  "split": 3
+  "split-size": 2000,
+  "split": 3,
+  "unit": 1
 }

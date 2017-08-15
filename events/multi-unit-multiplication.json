@@ -1,6 +1,5 @@
 {
-  "stateMachineArn": "state-machine-arn",
-  "executionName": "execution-name",
+  "executionName": "first-test",
   "matA": {
     "bucket": "jmue-matrix-tests",
     "folder": "sc4000",
@@ -17,5 +16,5 @@
       "bucket": "jmue-matrix-tests",
       "folder": "sc4000-result"
   },
-  "splitSizeLimit": 2000
+  "split-size": 2000
 }

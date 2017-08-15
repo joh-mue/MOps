@@ -1,7 +1,9 @@
 import boto3
 import json
 import pickle
+
 import aws
+from split import Split
 
 ### NUMPY, SCIPY, SKLEARN MAGIC
 import os
@@ -59,58 +61,46 @@ s3_client = boto3.client('s3')
 }
 '''
 def intermediate(event, context):
+    result_split = Split(event['result'], event['result']['split'])
+
+    left_split = Split.left_inputsplit_for(event['matA'], result_split, event['unit'])
+    right_split = Split.right_inputsplit_for(event['matB'], result_split, event['unit'])
+    
     intermediate_method = globals()["m_" + str(event['intermediate'])]
-    result = intermediate_method(event['matA'], event['matB'])
+    result = intermediate_method(left_split, right_split)
+
     key = "S{}_U{}_m{}".format(event['split'], event['unit'], event['intermediate'])
     aws.write_to_s3(
             data=result,
             bucket=event['result']['bucket'],
             folder=event['result']['folder'],
             key=key,
-            s3_client=s3_client
+            s3_client=Split.s3_client
     )
+
 # INTERMEDIATE METHODS
+# x is left input split, y is the right input split
 
-#  _ _  _ _ 
-# |X00 |X01 |
-# |_ _ |_ _ |
-# |X10 |X11 |
-# |_ _ |_ _ |
-#
+def m_0(x, y):
+    return (x.block(0,0) + x.block(1,1)).dot(y.block(0,0) + y.block(1,1))
 
-def m_0(X, Y):
-    return (partition(X,0,0) + partition(X,1,1)).dot(partition(Y,0,0) + partition(Y,1,1))
+def m_1(x, y):
+    return (x.block(1,0) + x.block(1,1)).dot(y.block(0,0))
 
-def m_1(X, Y):
-    return (partition(X,1,0) + partition(X,1,1)).dot(partition(Y,0,0))
+def m_2(x, y):
+    return x.block(0,0).dot(y.block(0,1) - y.block(1,1))
 
-def m_2(X, Y):
-    return partition(X,0,0).dot(partition(Y,0,1) - partition(Y,1,1))
+def m_3(x, y):
+    return x.block(1,1).dot(y.block(1,0) - y.block(0,0))
 
-def m_3(X, Y):
-    return partition(X,1,1).dot(partition(Y,1,0) - partition(Y,0,0))
+def m_4(x, y):
+    return (x.block(0,0) + x.block(0,1)).dot(y.block(1,1))
 
-def m_4(X, Y):
-    return (partition(X,0,0) + partition(X,0,1)).dot(partition(Y,1,1))
+def m_5(x, y):
+    return (x.block(1,0) - x.block(0,0)).dot(y.block(0,0) + y.block(0,1))
 
-def m_5(X, Y):
-    return (partition(X,1,0) - partition(X,0,0)).dot(partition(Y,0,0) + partition(Y,0,1))
-
-def m_6(X, Y):
-    return (partition(X,0,1) - partition(X,1,1)).dot(partition(Y,1,0) + partition(Y,1,1))
-
-
-def partition(matrix, x, y):
-    print("Loading partition {}_{}_{}".format(matrix['folder'], x, y))
-    split = matrix['split']
-    x += split['x1']/1000
-    y += split['y1']/1000
-    partition_factor = ((split['x2']-split['x1'])/2)/1000 # length of split us twice the size of a partition
-
-    filename = "m_{}_{}.npy".format(partition_factor*x, partition_factor*y)
-    path = aws.download_s3_file(matrix['bucket'], matrix['folder'], filename, s3_client)
-    return np.load(path)
-
+def m_6(x, y):
+    return (x.block(0,1) - x.block(1,1)).dot(y.block(1,0) + y.block(1,1))
 
 '''
 ### COLLECTOR

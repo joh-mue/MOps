@@ -61,9 +61,9 @@ def load_all_partials(block_index, result, split):
 
     return paths
 
-def get_absolute_block_index(block_index, split):
+def get_absolute_block_index(block_index, split, split_size):
     x, y = int(block_index[0]), int(block_index[1])
     x += split['x1']/1000
     y += split['y1']/1000
-    partition_factor = ((split['x2']-split['x1'])/2)/1000 # length of split us twice the size of a partition
-    return (partition_factor*x, partition_factor*y)
+    block_size = split_size/2 # block is half as long as a split
+    return (block_size*x, block_size*y)
