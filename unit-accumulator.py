@@ -2,6 +2,8 @@ import boto3
 import json
 import aws
 
+from collections import namedtuple
+
 ### NUMPY, SCIPY, SKLEARN MAGIC
 import os
 import ctypes
@@ -32,17 +34,18 @@ def accumulate(event, context):
         partial_paths = load_all_partials(block_index, event['result'], event['split'])
         
         # add them up
-        final_block = np.zeros(shape=(1000,1000), dtype=np.int)
+        shape = (event['split-size']/2, event['split-size']/2)
+        final_block = np.zeros(shape, dtype=np.float)
         for path in partial_paths:
           final_block += np.load(path)
 
-        index = get_absolute_block_index(block_index, event['result']['split'])
+        index = get_absolute_block_index(block_index, event['result']['split'], event['split-size'])
 
         aws.write_to_s3(
                 data=final_block,
                 bucket=event['result']['bucket'],
                 folder=event['result']['folder'],
-                key="X{}{}".format(index[0], index[1]),
+                key="m_{}_{}".format(index.x, index.y),
                 s3_client=s3_client)
 
 def load_all_partials(block_index, result, split):
@@ -63,7 +66,9 @@ def load_all_partials(block_index, result, split):
 
 def get_absolute_block_index(block_index, split, split_size):
     x, y = int(block_index[0]), int(block_index[1])
-    x += split['x1']/1000
-    y += split['y1']/1000
+    x += split['x']/1000
+    y += split['y']/1000
+    
+    Index = namedtuple("Index", ['x','y'])
     block_size = split_size/2 # block is half as long as a split
-    return (block_size*x, block_size*y)
+    return Index(x, y)

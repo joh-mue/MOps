@@ -49,7 +49,7 @@ def _branch(startAt, states):
 
 def _create_strassen_sfn(unit):
     branches = []
-    for index in range(0,7):g
+    for index in range(0,7):
         unit_m = "U{}_m{}".format(unit, index) # U0_m_0
         unit_m_lambda = "U{}_m{}_lambda".format(unit, index) # U0_m_0_lambda
         states = {

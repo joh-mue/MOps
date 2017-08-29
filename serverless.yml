@@ -26,14 +26,15 @@ provider:
         - "*"
     - Effect: "Allow"
       Action:
-        - "sts:AssumeRole" 
-      Resource:
-        - "arn:aws:iam::146904559692:role/StepFunctionRole"
-    - Effect: "Allow"
-      Action:
         - "states:*"
       Resource:
         - "*"
+    - Effect: "Allow"
+      Action:
+        - "iam:PassRole"
+      Resource:
+        - "arn:aws:iam::146904559692:role/mmultiply-prod-eu-central-1-lambdaRole"
+
 
 # you can add packaging information here
 package:
@@ -50,11 +51,20 @@ package:
     - sklearn/**
     - test-files/**
     - strassen-test-script.py
-    - strassen-sfn.asl
-    - strassen-split-sfn.asl
+    - state-machines/
 #  artifact: my-service-code.zip
 
 functions:
+  floatrix:
+    handler: floatrix.handler
+    package:
+      include:
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1536
+    timeout: 300
+
   strassen:
     handler: strassen.handler
     package:
@@ -154,3 +164,18 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+# resources:
+#   Resources:
+#     fuckOffPermission:
+#       Type: AWS::IAM::Role
+#       Properties:
+#         RoleName: fuckOffPermission
+#         AssumeRolePolicyDocument:
+#           Version: "2012-10-17"
+#           Statement:
+#             - Effect: "Allow"
+#               Principal:
+#                 Service:
+#                   - "states.eu-central-1.amazonaws.com"
+#               Action: "sts:AssumeRole"
