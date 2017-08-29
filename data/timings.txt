@@ -1,0 +1,193 @@
+sls invoke -v --log --function floatrix --data '{ "columns": 2000, "rows": 2000 }'
+{
+    "rows": 2000,
+    "columns": 2000,
+    "calculation": 4571,
+    "generating matrices": 140,
+    "remaining": 295288
+}
+--------------------------------------------------------------------
+START RequestId: 64657750-8c90-11e7-9c18-ab652d60fde4 Version: $LATEST
+END RequestId: 64657750-8c90-11e7-9c18-ab652d60fde4
+REPORT RequestId: 64657750-8c90-11e7-9c18-ab652d60fde4  Duration: 4713.12 ms  Billed Duration: 4800 ms  Memory Size: 1536 MB  Max Memory Used: 873 MB
+
+
+sls invoke -v --log --function floatrix --data '{ "columns": 2000, "rows": 2000 }'
+{
+    "rows": 2000,
+    "columns": 2000,
+    "calculation": 5750,
+    "generating matrices": 180,
+    "remaining": 294068
+}
+--------------------------------------------------------------------
+START RequestId: 756a4f6d-8c90-11e7-a98f-6d3dab61e7c6 Version: $LATEST
+END RequestId: 756a4f6d-8c90-11e7-a98f-6d3dab61e7c6
+REPORT RequestId: 756a4f6d-8c90-11e7-a98f-6d3dab61e7c6  Duration: 5934.52 ms  Billed Duration: 6000 ms  Memory Size: 1536 MB  Max Memory Used: 874 MB
+
+
+sls invoke -v --log --function floatrix --data '{ "columns": 2000, "rows": 2000 }'
+
+{
+    "rows": 2000,
+    "columns": 2000,
+    "calculation": 5558,
+    "generating matrices": 157,
+    "remaining": 294284
+}
+--------------------------------------------------------------------
+START RequestId: 7c77e163-8c90-11e7-b05a-27fdae4320a2 Version: $LATEST
+END RequestId: 7c77e163-8c90-11e7-b05a-27fdae4320a2
+REPORT RequestId: 7c77e163-8c90-11e7-b05a-27fdae4320a2  Duration: 5718.41 ms  Billed Duration: 5800 ms  Memory Size: 1536 MB  Max Memory Used: 874 MB
+
+
+sls invoke -v --log --function floatrix --data '{ "columns": 4000, "rows": 4000 }'
+
+{
+    "rows": 4000,
+    "columns": 4000,
+    "calculation": 36736,
+    "generating matrices": 454,
+    "remaining": 262809,
+}
+--------------------------------------------------------------------,
+START RequestId: 3b30df61-8c8f-11e7-8353-d3bd7a01d328 Version: $LATEST
+END RequestId: 3b30df61-8c8f-11e7-8353-d3bd7a01d328
+REPORT RequestId: 3b30df61-8c8f-11e7-8353-d3bd7a01d328  Duration: 37197.40 ms Billed Duration: 37200 ms   Memory Size: 1536 MB  Max Memory Used: 418 MB
+
+
+{
+    "calculation": 36209,
+    "rows": 4000,
+    "remaining": 263279,
+    "columns": 4000,
+    "generating matrices": 511
+}
+--------------------------------------------------------------------
+START RequestId: f0a66913-8c96-11e7-b36a-1144255bfa63 Version: $LATEST
+END RequestId: f0a66913-8c96-11e7-b36a-1144255bfa63
+REPORT RequestId: f0a66913-8c96-11e7-b36a-1144255bfa63  Duration: 36727.37 ms   Billed Duration: 36800 ms   Memory Size: 1536 MB    Max Memory Used: 876 MB
+
+sls invoke -v --log --function floatrix --data '{ "columns": 5000, "rows": 5000 }'
+{
+    "rows": 5000,
+    "columns": 5000,
+    "calculation": 82168,
+    "generating matrices": 994,
+    "remaining": 216821
+}
+--------------------------------------------------------------------
+START RequestId: 2c93276c-8c90-11e7-94d6-533e7802c540 Version: $LATEST
+END RequestId: 2c93276c-8c90-11e7-94d6-533e7802c540
+REPORT RequestId: 2c93276c-8c90-11e7-94d6-533e7802c540  Duration: 83188.65 ms Billed Duration: 83200 ms   Memory Size: 1536 MB  Max Memory Used: 873 MB
+
+
+sls invoke -v --log --function floatrix --data '{ "columns": 5000, "rows": 5000 }'
+{
+    "rows": 5000,
+    "columns": 5000,
+    "calculation": 81319,
+    "generating matrices": 793,
+    "remaining": 217887
+}
+--------------------------------------------------------------------
+START RequestId: 72d796c8-8c90-11e7-990b-e1a897dc21d4 Version: $LATEST
+END RequestId: 72d796c8-8c90-11e7-990b-e1a897dc21d4
+REPORT RequestId: 72d796c8-8c90-11e7-990b-e1a897dc21d4  Duration: 82129.36 ms Billed Duration: 82200 ms   Memory Size: 1536 MB  Max Memory Used: 873 MB
+
+
+sls invoke -v --log --function floatrix --data '{ "columns": 5000, "rows": 5000 }'
+{
+    "rows": 5000,
+    "columns": 5000,
+    "calculation": 85606,
+    "generating matrices": 1002,
+    "remaining": 213391
+}
+--------------------------------------------------------------------
+START RequestId: d0ccc7aa-8c90-11e7-af2b-47d16c6cff42 Version: $LATEST
+END RequestId: d0ccc7aa-8c90-11e7-af2b-47d16c6cff42
+REPORT RequestId: d0ccc7aa-8c90-11e7-af2b-47d16c6cff42  Duration: 86631.57 ms Billed Duration: 86700 ms   Memory Size: 1536 MB  Max Memory Used: 873 MB
+
+
+{
+    "rows": 6000,
+    "columns": 6000,
+    "calculation": 124862,
+    "generating matrices": 1093,
+    "remaining": 174044
+}
+--------------------------------------------------------------------
+START RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede Version: $LATEST
+END RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede
+REPORT RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede  Duration: 125974.67 ms  Billed Duration: 126000 ms  Memory Size: 1536 MB  Max Memory Used: 878 MB 
+
+
+
+{
+    "rows": 8000,
+    "columns": 8000,
+    "calculation": 293342,
+    "generating matrices": 1897,
+    "remaining": 4760
+}
+--------------------------------------------------------------------
+START RequestId: e6cabe89-8c92-11e7-8d5a-1dafcea2aea8 Version: $LATEST
+END RequestId: e6cabe89-8c92-11e7-8d5a-1dafcea2aea8
+REPORT RequestId: e6cabe89-8c92-11e7-8d5a-1dafcea2aea8  Duration: 295271.89 ms  Billed Duration: 295300 ms  Memory Size: 1536 MB  Max Memory Used: 1521 MB
+
+{
+  "calculation": 296183,
+  "rows": 8000,
+  "remaining": 1922,
+  "columns": 8000,
+  "generating matrices": 1894
+}
+--------------------------------------------------------------------
+START RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af Version: $LATEST
+END RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af
+REPORT RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af  Duration: 298107.36 ms  Billed Duration: 298200 ms  Memory Size: 1536 MB    Max Memory Used: 1525 MB    
+
+date; and sls invoke -v --log --function floatrix --data '{ "columns": 5500, "rows": 5500 }'
+Tue Aug 29 10:06:31 CEST 2017
+{
+    "calculation": 95317,
+    "rows": 5500,
+    "remaining": 203779,
+    "columns": 5500,
+    "generating matrices": 888
+}
+--------------------------------------------------------------------
+START RequestId: f918a335-8c90-11e7-b9f8-a70b51e75664 Version: $LATEST
+END RequestId: f918a335-8c90-11e7-b9f8-a70b51e75664
+REPORT RequestId: f918a335-8c90-11e7-b9f8-a70b51e75664  Duration: 96236.69 ms   Billed Duration: 96300 ms   Memory Size: 1536 MB    Max Memory Used: 879 MB
+
+
+~/U/M/M/r/matrix-operations (master) $
+date; and sls invoke -v --log --function floatrix --data '{ "columns": 5500, "rows": 5500 }'
+Tue Aug 29 10:11:09 CEST 2017
+{
+    "calculation": 107161,
+    "rows": 5500,
+    "remaining": 191642,
+    "columns": 5500,
+    "generating matrices": 1196
+}
+--------------------------------------------------------------------
+START RequestId: 9edd506e-8c91-11e7-93ce-531cc778d996 Version: $LATEST
+END RequestId: 9edd506e-8c91-11e7-93ce-531cc778d996
+REPORT RequestId: 9edd506e-8c91-11e7-93ce-531cc778d996  Duration: 108374.56 ms  Billed Duration: 108400 ms  Memory Size: 1536 MB    Max Memory Used: 876 MB
+
+date; and sls invoke -v --log --function floatrix --data '{ "columns": 5800, "rows": 5800 }'
+Tue Aug 29 10:11:45 CEST 2017
+{
+    "calculation": 111715,
+    "rows": 5800,
+    "remaining": 187209,
+    "columns": 5800,
+    "generating matrices": 1075
+}
+--------------------------------------------------------------------
+START RequestId: fbb97039-8c91-11e7-889d-f508bb040a2d Version: $LATEST
+END RequestId: fbb97039-8c91-11e7-889d-f508bb040a2d
+REPORT RequestId: fbb97039-8c91-11e7-889d-f508bb040a2d  Duration: 112808.89 ms  Billed Duration: 112900 ms  Memory Size: 1536 MB    Max Memory Used: 876 MB
