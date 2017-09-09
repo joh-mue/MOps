@@ -21,7 +21,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = "UNI100"
+deploy_nr = 'UNI101'
 
 s3_client = boto3.client('s3')
 
@@ -90,7 +90,8 @@ def intermediate(event, context):
             'time-profile': {
                 's3-up': s3_upload_time,
                 's3-down': left_split.s3_download_time + right_split.s3_download_time,
-                'execution': 300000 - context.get_remaining_time_in_millis()
+                'execution': 300000 - context.get_remaining_time_in_millis(),
+                'lambda': 'intermediate'
             },
             'deploy-nr': deploy_nr
     }
@@ -152,10 +153,11 @@ def collect(event, context):
     s3_upload_time = start - end
     
     return {
-            "time-profile": {
-                "s3-up": s3_upload_time,
-                "s3-down": s3_download_time,
-                "execution": 300000 - context.get_remaining_time_in_millis()
+            'time-profile': {
+                's3-up': s3_upload_time,
+                's3-down': s3_download_time,
+                'execution': 300000 - context.get_remaining_time_in_millis(),
+                'lambda': 'collect'
             },
             'deploy-nr': deploy_nr
     }
@@ -187,7 +189,7 @@ def x_1_1(op_meta_data):
     return m_0 + m_2 - m_1 + m_5
   
 def load_interm_result(op_meta_data, x):
-    filename = "S{}_U{}_m{}".format(op_meta_data.split, op_meta_data.unit, x)
+    filename = 'S{}_U{}_m{}'.format(op_meta_data.split, op_meta_data.unit, x)
     
     start = time.time()
     path = aws.download_s3_file(op_meta_data.bucket, op_meta_data.folder, filename, s3_client)
