@@ -52,6 +52,7 @@ package:
     - test-files/**
     - strassen-test-script.py
     - state-machines/
+    - data/
 #  artifact: my-service-code.zip
 
 functions:

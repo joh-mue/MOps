@@ -4,6 +4,8 @@ import os
 
 import asl
 
+deploy_nr = 'MUM100'
+
 sfn_client = boto3.client('stepfunctions')
 
 '''
@@ -44,16 +46,19 @@ def handler(event, context):
     state_machine_Arn = deploy_state_machine(state_machine, event['state-machine-name'])
 
     # start m*p many split calculation stepfunction-executions with n units each
+    executions = []
     for i in range(m):
         for k in range(p):
             print "Split_{} (x:{} y:{})".format(i*p+k, i, k),
-            start_execution(i,k,p, event, state_machine_Arn)
+            executionARN = start_execution(i,k,p, event, state_machine_Arn)           
+            executions.append({'split': i*p+k, 'executionARN': executionARN })
         print ""
 
+    return { 'split-executions': executions, 'state-machine-arn': state_machine_Arn, 'deploy-nr': deploy_nr }
 
 def deploy_state_machine(asl, state_machine_name):
     # arn = 'arn:aws:iam::146904559692:role/StepFunctionRole'
-    arn = "arn:aws:iam::146904559692:role/mmultiply-prod-eu-central-1-lambdaRole"
+    arn = 'arn:aws:iam::146904559692:role/mmultiply-prod-eu-central-1-lambdaRole'
     sfn_client = boto3.client('stepfunctions')
     response = sfn_client.create_state_machine(name=state_machine_name, definition=asl, roleArn=arn)
     return response['stateMachineArn']
@@ -62,7 +67,7 @@ def deploy_state_machine(asl, state_machine_name):
 def start_execution(i, k, p, event, state_machine_Arn):
     split_size = event['split-size']
     sfn_input = event
-    sfn_input['result']['split'] = { "x": i*split_size, "y": k*split_size }
+    sfn_input['result']['split'] = { 'x': i*split_size, 'y': k*split_size }
     split = i*p + k
     sfn_input['split'] = split
     response = sfn_client.start_execution(
@@ -70,4 +75,4 @@ def start_execution(i, k, p, event, state_machine_Arn):
             name="{}-split{}".format(event['executionName'], split),
             input=json.dumps(sfn_input)
     )
-    print response['executionArn']
+    return response['executionArn']

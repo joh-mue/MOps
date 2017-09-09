@@ -41,7 +41,7 @@ class Split(object):
         start = time.time()
         path = aws.download_s3_file(self.bucket, self.folder, filename, self.s3_client)
         end = time.time()
-        self.s3_download_time += end - start
+        self.s3_download_time += int((end - start) * 1000)
 
         return np.load(path)
 

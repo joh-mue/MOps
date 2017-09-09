@@ -1,28 +1,28 @@
 {
-  "stateMachineArn": "arn:aws:states:eu-central-1:146904559692:stateMachine:strassen-multiplication-12",
-  "executionName": "invoke-local",
+  "stateMachineArn": "arn:aws:states:eu-central-1:146904559692:stateMachine:multi-unit-mmultiply-2kx2k ",
+  "executionName": "invoke-with-timings",
   "matA": {
     "bucket": "jmue-matrix-tests",
-    "folder": "sc4000",
-    "rows": 4000,
-    "columns": 4000
+    "folder": "square_matrix_2kx2k",
+    "rows": 2000,
+    "columns": 2000
   },
   "matB": {
     "bucket": "jmue-matrix-tests",
-    "folder": "sc4000transp",
-    "rows": 4000,
-    "columns": 4000
+    "folder": "square_matrix_2kx2k-2",
+    "rows": 2000,
+    "columns": 2000
   },
   "result": {
     "bucket": "jmue-matrix-tests",
-    "folder": "sc4000-result",
+    "folder": "square_matrix_2kx2k-result",
     "split": {
-      "x": 2000,
-      "y": 2000
+      "x": 0,
+      "y": 0
     }
   },
   "split-size": 2000,
   "intermediate": 6,
-  "split": 3,
-  "unit": 1
+  "split": 0,
+  "unit": 0
 }

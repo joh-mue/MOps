@@ -1,0 +1,21 @@
+{
+  "executionName": "test-2k-with-time-profiles-5",
+  "matA": {
+    "bucket": "jmue-matrix-tests",
+    "columns": 2000,
+    "folder": "square_matrix_2kx2k",
+    "rows": 2000
+  },
+  "matB": {
+    "bucket": "jmue-matrix-tests",
+    "columns": 2000,
+    "folder": "square_matrix_2kx2k-2",
+    "rows": 2000
+  },
+  "result": {
+    "bucket": "jmue-matrix-tests",
+    "folder": "square_matrix_2kx2k-result"
+  },
+  "split-size": 2000,
+  "state-machine-name": "multi-unit-mmultiply-2kx2k"
+}

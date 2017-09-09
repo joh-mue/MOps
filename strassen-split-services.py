@@ -1,6 +1,7 @@
 import boto3
 import json
 import pickle
+from collections import namedtuple
 
 import aws
 from split import Split
@@ -19,6 +20,8 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
+
+deploy_nr = "UNI100"
 
 s3_client = boto3.client('s3')
 
@@ -65,11 +68,12 @@ def intermediate(event, context):
 
     left_split = Split.left_inputsplit_for(event['matA'], result_split, event['unit'])
     right_split = Split.right_inputsplit_for(event['matB'], result_split, event['unit'])
-    
+
     intermediate_method = globals()["m_" + str(event['intermediate'])]
     result = intermediate_method(left_split, right_split)
-
     key = "S{}_U{}_m{}".format(event['split'], event['unit'], event['intermediate'])
+    
+    start = context.get_remaining_time_in_millis()
     aws.write_to_s3(
             data=result,
             bucket=event['result']['bucket'],
@@ -77,6 +81,19 @@ def intermediate(event, context):
             key=key,
             s3_client=Split.s3_client
     )
+    s3_upload_time = start - context.get_remaining_time_in_millis()
+
+    return {
+            'intermediate': event['intermediate'],
+            'split': event['split'],
+            'unit': event['unit'] ,
+            'time-profile': {
+                's3-up': s3_upload_time,
+                's3-down': left_split.s3_download_time + right_split.s3_download_time,
+                'execution': 300000 - context.get_remaining_time_in_millis()
+            },
+            'deploy-nr': deploy_nr
+    }
 
 # INTERMEDIATE METHODS
 # x is left input split, y is the right input split
@@ -111,48 +128,70 @@ def m_6(x, y):
   }
 }
 '''
+s3_download_time = 0
+
 def collect(event, context):
+    s3_upload_time = 0
     result = event['result']
 
-    X00 = x_0_0(result['bucket'], result['folder'], event['split'], event['unit'])
-    X01 = x_0_1(result['bucket'], result['folder'], event['split'], event['unit'])
-    X10 = x_1_0(result['bucket'], result['folder'], event['split'], event['unit'])
-    X11 = x_1_1(result['bucket'], result['folder'], event['split'], event['unit'])
+    OperationMetaData = namedtuple('OperationMetaData', ['bucket', 'folder', 'split', 'unit'])
+    op_meta_data = OperationMetaData(result['bucket'], result['folder'], event['split'], event['unit']) 
+
+    X00 = x_0_0(op_meta_data)
+    X01 = x_0_1(op_meta_data)
+    X10 = x_1_0(op_meta_data)
+    X11 = x_1_1(op_meta_data)
 
     base = "S{}_X{}_U{}".format(event['split'], "{}", event['unit'])
+    start = context.get_remaining_time_in_millis()
     aws.write_to_s3(X00, result['bucket'], result['folder'], base.format("00"), s3_client)
     aws.write_to_s3(X01, result['bucket'], result['folder'], base.format("01"), s3_client)
     aws.write_to_s3(X10, result['bucket'], result['folder'], base.format("10"), s3_client)
     aws.write_to_s3(X11, result['bucket'], result['folder'], base.format("11"), s3_client)
+    end = context.get_remaining_time_in_millis()
+    s3_upload_time = start - end
+    
+    return {
+            "time-profile": {
+                "s3-up": s3_upload_time,
+                "s3-down": s3_download_time,
+                "execution": 300000 - context.get_remaining_time_in_millis()
+            },
+            'deploy-nr': deploy_nr
+    }
 
 # COLLECTOR
 
-def x_0_0(bucket, folder, split, unit):
-    m_0 = load_interm_result(bucket, folder, split, unit, 0)
-    m_3 = load_interm_result(bucket, folder, split, unit, 3)
-    m_4 = load_interm_result(bucket, folder, split, unit, 4)
-    m_6 = load_interm_result(bucket, folder, split, unit, 6)
+def x_0_0(op_meta_data):
+    m_0 = load_interm_result(op_meta_data, 0)
+    m_3 = load_interm_result(op_meta_data, 3)
+    m_4 = load_interm_result(op_meta_data, 4)
+    m_6 = load_interm_result(op_meta_data, 6)
     return m_0 + m_3 - m_4 + m_6
 
-def x_0_1(bucket, folder, split, unit):
-    m_2 = load_interm_result(bucket, folder, split, unit, 2)
-    m_4 = load_interm_result(bucket, folder, split, unit, 4)
+def x_0_1(op_meta_data):
+    m_2 = load_interm_result(op_meta_data, 2)
+    m_4 = load_interm_result(op_meta_data, 4)
     return m_2 + m_4
 
-def x_1_0(bucket, folder, split, unit):
-    m_1 = load_interm_result(bucket, folder, split, unit, 1)
-    m_3 = load_interm_result(bucket, folder, split, unit, 3)
+def x_1_0(op_meta_data):
+    m_1 = load_interm_result(op_meta_data, 1)
+    m_3 = load_interm_result(op_meta_data, 3)
     return m_1 + m_3
 
-def x_1_1(bucket, folder, split, unit):
-    m_0 = load_interm_result(bucket, folder, split, unit, 0)
-    m_2 = load_interm_result(bucket, folder, split, unit, 2)
-    m_1 = load_interm_result(bucket, folder, split, unit, 1)
-    m_5 = load_interm_result(bucket, folder, split, unit, 5)
+def x_1_1(op_meta_data):
+    m_0 = load_interm_result(op_meta_data, 0)
+    m_2 = load_interm_result(op_meta_data, 2)
+    m_1 = load_interm_result(op_meta_data, 1)
+    m_5 = load_interm_result(op_meta_data, 5)
     return m_0 + m_2 - m_1 + m_5
   
-def load_interm_result(bucket, folder, split, unit, x):
-    filename = "S{}_U{}_m{}".format(split, unit, x)
+def load_interm_result(op_meta_data, x):
+    filename = "S{}_U{}_m{}".format(op_meta_data.split, op_meta_data.unit, x)
+    
+    start = time.time()
+    path = aws.download_s3_file(op_meta_data.bucket, op_meta_data.folder, filename, s3_client)
+    end = time.time()
+    s3_download_time += int((end - start) * 1000)
 
-    path = aws.download_s3_file(bucket, folder, filename, s3_client)
     return np.load(path)
