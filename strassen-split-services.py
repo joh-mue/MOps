@@ -22,9 +22,10 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'UNI102'
+deploy_nr = 'UNI103'
 
 s3_client = boto3.client('s3')
+
 
 # HANDLERS
 
@@ -190,11 +191,13 @@ def x_1_1(op_meta_data):
     return m_0 + m_2 - m_1 + m_5
   
 def load_interm_result(op_meta_data, x):
+    global s3_download_time
+
     filename = 'S{}_U{}_m{}'.format(op_meta_data.split, op_meta_data.unit, x)
     
     start = time.time()
     path = aws.download_s3_file(op_meta_data.bucket, op_meta_data.folder, filename, s3_client)
     end = time.time()
-    s3_download_time += int((end - start) * 1000)
+    s3_download_time = s3_download_time + int((end - start) * 1000)
 
     return np.load(path)
