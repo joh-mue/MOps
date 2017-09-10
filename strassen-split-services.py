@@ -1,6 +1,7 @@
 import boto3
 import json
 import pickle
+import time
 from collections import namedtuple
 
 import aws
@@ -21,7 +22,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'UNI101'
+deploy_nr = 'UNI102'
 
 s3_client = boto3.client('s3')
 
