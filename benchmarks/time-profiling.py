@@ -26,10 +26,16 @@ sfn_client = boto3.client('stepfunctions')
 ###     METHODS      ###
 ########################
 
+def _log(message):
+    timestamp = datetime.now().strftime('%d.%m.%y %H:%M:%S>')
+    print timestamp() + message
+
+
 def write_block_to_file(block, directory, row, column):
     if not os.path.exists(directory):
         os.mkdir(directory)
     path = os.path.join(directory, 'm_' + str(row) + '_' + str(column))
+    _log('Writing block to file: {}'.format(timestamp(), path))
     np.save(path, block)
 
 def get_block_with_random(height, width):
@@ -45,7 +51,9 @@ def create_blocks_with_random(x, y, block_height, block_width, matrix_name=matri
 def create_matrices(matrix_dimensions, matrix_name):
     x = matrix_dimensions.height/BLOCK_SIZE
     y = matrix_dimensions.width/BLOCK_SIZE
+    _log('Creating matrix: {}'.format(matrix_name))
     create_blocks_with_random(x, y, BLOCK_SIZE, BLOCK_SIZE, matrix_name)
+    _log('Creating matrix: {}'.format(matrix_name + '-2'))
     create_blocks_with_random(x, y, BLOCK_SIZE, BLOCK_SIZE, matrix_name + '-2')
 
 
@@ -59,6 +67,7 @@ def upload_blocks(matrix_name, bucket, s3_matrix_name=None):
         s3_folder = s3_matrix_name
     
     for filename in filenames:
+        _log('Uploading to s3: {}'.format(filename))
         s3_client.upload_file(
             Filename=os.path.join(localpath,filename),
             Bucket=bucket,
@@ -67,8 +76,10 @@ def upload_blocks(matrix_name, bucket, s3_matrix_name=None):
 
 def deploy_matrices(matrix_name):
     """ for all matrices """
-        uploaded_block(matrix_name, BUCKET)
-        uploaded_block(matrix_name, BUCKET, s3_matrix_name=matrix_name + '-2')
+        _log('Uploading matrix to s3: {}'.format(matrix_name))
+        uploaded_blocks(matrix_name, BUCKET)
+        _log('Uploading matrix to s3: {}'.format(matrix_name + '-2'))
+        uploaded_blocks(matrix_name, BUCKET, s3_matrix_name=matrix_name + '-2')
 
 
 
@@ -98,20 +109,17 @@ def create_input(state_machine_name, executionName, name_matrixA, name_matrixB):
 
 def invoke_matrix_multiplication(state_machine_name, executionName, name_matrixA, name_matrixB):
     """ execution_info.keys() :> ['deploy-nr', 'split-executions', 'split'] """
-    execution_infos = []
-    ### TODO """ for all matrices """
+    sfn_input = create_input(state_machine_name, executionName, name_matrixA, name_matrixB)
+    print("{}Invoking matrix multoplication with input: {}".format(sfn_input))
+    response = lambda_client.invoke(
 
-        sfn_input = create_input(state_machine_name, executionName, name_matrixA, name_matrixB)
-        response = lambda_client.invoke(
-
-            FunctionName='mmultiply-prod-multi-unit-multiplication',
-            InvocationType='RequestResponse',
-            LogType='Tail',
-            Payload=json.dumps(input)
-        )
-        print base64.b64decode(response['LogResult'])
-        execution_infos.append(json.loads(response['Payload'].read()))
-    return execution_infos
+        FunctionName='mmultiply-prod-multi-unit-multiplication',
+        InvocationType='RequestResponse',
+        LogType='Tail',
+        Payload=json.dumps(input)
+    )
+    _log('LogResult: \n{}'.format(base64.b64decode(response['LogResult'])))
+    return json.loads(response['Payload'].read())
 
 
 
@@ -126,17 +134,18 @@ def executions_pending(executionArns):
         )['events'][0]
 
         if last_event['type'] == 'ExecutionFailed':
-            print('Execution {} failed.'.format(executionArn))
+            _log('Execution {} failed.'.format(xecutionArn))
             pass
         elif last_event['type'] != 'ExecutionSucceeded':
             return False
-
+    _log('All executions finished(failed/succeeded).')
     return True
 
 
 
 def get_time_profiles(events):
     """ Time profiles are part of the lambda output which is returned as a json formated string """
+    _log("Extracting time profiles")
     lambda_outputs = [x['lambdaFunctionSucceededEventDetails']['output'] for x in events if x['type'] == 'LambdaFunctionSucceeded']
     time_profiles = [json.loads(x)['time-profile'] for x in lambda_outputs]
 
@@ -148,16 +157,18 @@ def get_time_profiles(events):
 
 def get_all_events(executionArns):
     events = []
-    response = sfn_client.get_execution_history(executionArn=executionARN)
-    events.extend(response['events'])
-
-    while response.has_key('nextToken'):
-        print('Loading further events')
-        response = sfn_client.get_execution_history(
-            executionArn=executionARN,
-            nextToken=response['nextToken']
-        )
+    for executionArn in executionArns:
+        _log('Retrieving execution history for {}'.format(executionArn))
+        response = sfn_client.get_execution_history(executionArn=executionARN)
         events.extend(response['events'])
+
+        while response.has_key('nextToken'):
+            print('Loading further events')
+            response = sfn_client.get_execution_history(
+                executionArn=executionARN,
+                nextToken=response['nextToken']
+            )
+            events.extend(response['events'])
 
     return events
 
@@ -168,7 +179,11 @@ def create_time_profiles(executionArns):
 
 
 
-def plot_timing_profile(timings, lambda_type):
+def plot_timing_profile(timings, lambda_type, matrix_name):
+    # e.g. './block_size_1000/sq_2kx2k_intermediate.png'
+    plot_path = 'block_size_{}/{}_{}.png'.format(BLOCK_SIZE, matrix_name, lambda_type)
+    _log('Creating plot {}'.format(plot_plath))
+    
     N = len(timings.down)
     index = np.arange(N)    # the x locations for the groups
     width = 0.5           # the width of the bars: can also be len(x) sequence
@@ -185,11 +200,9 @@ def plot_timing_profile(timings, lambda_type):
     ax.set_ylabel('time in ms')
     ax.set_xlabel('execution index, 0 is averages across executions')
     ax.set_title('Timing profiles for {}-lambda executions.'.format(lambda_type))
-
     ax.legend((p3, p2, p1), ('Calculation', 'S3 upload','S3 download'), loc=4)
-    plot_path = 'block_size_{}/{}_{}.png'.format(BLOCK_SIZE, matrix_name, lambda_type)
-    # e.g. './block_size_1000/sq_2kx2k_intermediate.png'
-    plt.savefig(os.path.join(BENCHMARKS_FOLDER, plot_path), dpi=500) 
+
+    plt.savefig(os.path.join(BENCHMARKS_FOLDER, plot_path), dpi=500)
     # plt.show()
 
 def collect_values(lambda_type, add_average=True):
@@ -208,10 +221,10 @@ def collect_values(lambda_type, add_average=True):
       
     return Timings(s3_down, s3_up, calcs)
 
-def analyze_time_profiles(time_profiles_by_lambda):
+def plot_time_profiles(time_profiles_by_lambda, matrix_name):
     for lambda_type in time_profiles_by_lambda.keys():
-        timings = collect_values(lambda_type, add_average=True)
-        plot_timing_profile(timings, lambda_type)
+        timings = collect_values(time_profiles_by_lambda[lambda_type], add_average=True)
+        plot_timing_profile(timings, lambda_type, matrix_name)
 
 
 
@@ -240,29 +253,27 @@ SFN_PREFIX = 'benchmark'
 ########################
 
 matrix_dimension_sets = [
-        MatrixDimensions(height=2000, width=2000),
-        MatrixDimensions(height=3000, width=3000)
+        MatrixDimensions(height=2000, width=2000)
+        # MatrixDimensions(height=3000, width=3000)
 ]
 
 for matrix_dimensions in matrix_dimension_sets:
-    matrix_name = "{}_{}kx{}k".format(PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
+    matrix_name = '{}_{}kx{}k'.format(PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
 
     create_matrices(matrix_dimensions, matrix_name)
     deploy_matrices(matrix_name)
     
-    execution_infos = invoke_matrix_multiplication(
+    execution_info = invoke_matrix_multiplication(
             state_machine_name='{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000),
             executionName='{}-{}kx{}k'.format(SFN_PREFIX),
             name_matrixA=matrix_name,
             name_matrixB=matrix_name + '-2'
     )
-    split_executionArns = [x['executionArn'] for x in execution_infos['split-executions']]
+    split_executionArns = [x['executionArn'] for x in execution_info['split-executions']]
     while executions_pending(execution_arns):
         sleep(2)
     
     time_profiles = create_time_profiles(split_executionArns)
-    analyze_time_profiles(time_profiles)
-    
-    save_raw_data(time_profiles)
+    plot_time_profiles(time_profiles, matrix_name)
 
-compare_time_profiles()
+# compare_time_profiles()
