@@ -119,7 +119,6 @@ def invoke_matrix_multiplication(state_machine_name, executionName, name_matrixA
     sfn_input = create_input(state_machine_name, executionName, name_matrixA, name_matrixB)
     _log("Invoking matrix multiplication with input: {}".format(sfn_input))
     response = lambda_client.invoke(
-
         FunctionName='mmultiply-prod-multi-unit-multiplication',
         InvocationType='RequestResponse',
         LogType='Tail',
