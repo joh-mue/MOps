@@ -19,7 +19,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'ACC102'
+deploy_nr = 'ACC103'
 
 s3_client = boto3.client('s3')
 
@@ -33,43 +33,41 @@ accumulate.json
 '''
 def accumulate(event, context):
     execution_start = context.get_remaining_time_in_millis()
+    s3_download_time, s3_upload_time = 0, 0
 
     for block_index in ['00','01','10','11']:
-        
-        start = context.get_remaining_time_in_millis()
+        download_start = context.get_remaining_time_in_millis()
         partial_paths = load_all_partials(block_index, event['result'], event['split'])
-        end = context.get_remaining_time_in_millis()
-        s3_download_time = start - end
+        s3_download_time += download_start - context.get_remaining_time_in_millis()
         
         # add them up
         shape = (event['split-size']/2, event['split-size']/2)
         final_block = np.zeros(shape, dtype=np.float)
         for path in partial_paths:
-          final_block += np.load(path)
+            final_block += np.load(path)
 
         index = get_absolute_block_index(block_index, event['result']['split'], event['split-size'])
 
-        start = context.get_remaining_time_in_millis()
+        upload_start = context.get_remaining_time_in_millis()
         aws.write_to_s3(
                 data=final_block,
                 bucket=event['result']['bucket'],
                 folder=event['result']['folder'],
                 key='m_{}_{}'.format(index.x, index.y),
                 s3_client=s3_client)
-        end = context.get_remaining_time_in_millis()
-        s3_upload_time = start - end
-        execution_time = execution_start - context.get_remaining_time_in_millis()
+        s3_upload_time += upload_start - context.get_remaining_time_in_millis()
 
-        return {
-                'time-profile':{
-                    's3-up': s3_upload_time,
-                    's3-down': s3_download_time,
-                    'execution': execution_time,
-                    'lambda': 'accumulate'
-                },
-                'deploy-nr': deploy_nr,
-                'remaining_time_at_exec_start': execution_start
-        }
+    execution_time = execution_start - context.get_remaining_time_in_millis()
+    return {
+            'time-profile':{
+                's3-up': s3_upload_time,
+                's3-down': s3_download_time,
+                'execution': execution_time,
+                'lambda': 'accumulate'
+            },
+            'deploy-nr': deploy_nr,
+            'remaining_time_at_exec_start': execution_start
+    }
 
 def load_all_partials(block_index, result, split):
     response = s3_client.list_objects_v2(
@@ -94,4 +92,5 @@ def get_absolute_block_index(block_index, split, split_size):
     
     Index = namedtuple('Index', ['x','y'])
     block_size = split_size/2 # block is half as long as a split
+    print("x:{}y:{}".format(x,y))
     return Index(x, y)
