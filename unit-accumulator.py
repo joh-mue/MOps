@@ -19,7 +19,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'ACC101'
+deploy_nr = 'ACC102'
 
 s3_client = boto3.client('s3')
 
@@ -32,6 +32,8 @@ accumulate.json
 }
 '''
 def accumulate(event, context):
+    execution_start = context.get_remaining_time_in_millis()
+
     for block_index in ['00','01','10','11']:
         
         start = context.get_remaining_time_in_millis()
@@ -56,15 +58,17 @@ def accumulate(event, context):
                 s3_client=s3_client)
         end = context.get_remaining_time_in_millis()
         s3_upload_time = start - end
+        execution_time = execution_start - context.get_remaining_time_in_millis()
 
         return {
                 'time-profile':{
                     's3-up': s3_upload_time,
                     's3-down': s3_download_time,
-                    'execution': 300000 - context.get_remaining_time_in_millis(),
+                    'execution': execution_time,
                     'lambda': 'accumulate'
                 },
-                'deploy-nr': deploy_nr
+                'deploy-nr': deploy_nr,
+                'remaining_time_at_exec_start': execution_start
         }
 
 def load_all_partials(block_index, result, split):

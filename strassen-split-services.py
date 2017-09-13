@@ -22,7 +22,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'UNI103'
+deploy_nr = 'UNI104'
 
 s3_client = boto3.client('s3')
 
@@ -66,6 +66,8 @@ s3_client = boto3.client('s3')
 }
 '''
 def intermediate(event, context):
+    execution_start = context.get_remaining_time_in_millis()
+
     result_split = Split(event['result'], event['result']['split'])
 
     left_split = Split.left_inputsplit_for(event['matA'], result_split, event['unit'])
@@ -84,6 +86,7 @@ def intermediate(event, context):
             s3_client=Split.s3_client
     )
     s3_upload_time = start - context.get_remaining_time_in_millis()
+    execution_time = execution_start - context.get_remaining_time_in_millis()
 
     return {
             'intermediate': event['intermediate'],
@@ -92,10 +95,11 @@ def intermediate(event, context):
             'time-profile': {
                 's3-up': s3_upload_time,
                 's3-down': left_split.s3_download_time + right_split.s3_download_time,
-                'execution': 300000 - context.get_remaining_time_in_millis(),
+                'execution': execution_time,
                 'lambda': 'intermediate'
             },
-            'deploy-nr': deploy_nr
+            'deploy-nr': deploy_nr,
+            'remaining_time_at_exec_start': execution_start
     }
 
 # INTERMEDIATE METHODS
@@ -134,7 +138,8 @@ def m_6(x, y):
 s3_download_time = 0
 
 def collect(event, context):
-    s3_upload_time = 0
+    that_start_value = s3_download_time
+    execution_start = context.get_remaining_time_in_millis()
     result = event['result']
 
     OperationMetaData = namedtuple('OperationMetaData', ['bucket', 'folder', 'split', 'unit'])
@@ -153,15 +158,18 @@ def collect(event, context):
     aws.write_to_s3(X11, result['bucket'], result['folder'], base.format("11"), s3_client)
     end = context.get_remaining_time_in_millis()
     s3_upload_time = start - end
-    
+    execution_time = execution_start - context.get_remaining_time_in_millis()
+
     return {
             'time-profile': {
                 's3-up': s3_upload_time,
                 's3-down': s3_download_time,
-                'execution': 300000 - context.get_remaining_time_in_millis(),
+                'execution': execution_time,
                 'lambda': 'collect'
             },
-            'deploy-nr': deploy_nr
+            'deploy-nr': deploy_nr,
+            'that-start-value': that_start_value,
+            'remaining_time_at_exec_start': execution_start
     }
 
 # COLLECTOR
