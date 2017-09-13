@@ -34,7 +34,7 @@ sfn_client = boto3.client('stepfunctions')
 
 def _log(message):
     timestamp = datetime.now().strftime('%d.%m.%y %H:%M:%S > ')
-    LOG_FILE.write(timestamp + message)
+    LOG_FILE.writelines([timestamp + message])
     print timestamp + message
 
 
@@ -56,23 +56,23 @@ def create_blocks_with_random(x, y, block_height, block_width, matrix_name):
             directory = '/tmp/' + matrix_name
             write_block_to_file(block, directory, i, j)
 
-def create_matrices(matrix_dimensions, matrix_name):
+def create_matrices(matrix_dimensions, matrix_names):
     x = matrix_dimensions.height/BLOCK_SIZE
     y = matrix_dimensions.width/BLOCK_SIZE
-    _log('Creating matrix: {}'.format(matrix_name))
-    create_blocks_with_random(x, y, BLOCK_SIZE, BLOCK_SIZE, matrix_name)
-    _log('Creating matrix: {}'.format(matrix_name + '-2'))
-    create_blocks_with_random(x, y, BLOCK_SIZE, BLOCK_SIZE, matrix_name + '-2')
+    for matrix_name in matrix_names:
+        if os.path.exists('/tmp/{}'.format(matrix_name)):
+            _log("[WARNING] Matrix {} already exists locally. Skipping creation.".format(matrix_name))
+        else:
+            _log('Creating matrix: {}'.format(matrix_name))
+            create_blocks_with_random(x, y, BLOCK_SIZE, BLOCK_SIZE, matrix_name)
 
 
 
-def upload_blocks(matrix_name, bucket, s3_matrix_name=None):
+def upload_blocks(matrix_name, bucket):
     localpath = '/tmp/' + matrix_name
     filenames = os.listdir(localpath)
 
     s3_folder = matrix_name
-    if s3_matrix_name is not None:
-        s3_folder = s3_matrix_name
     
     for filename in filenames:
         _log('Uploading to s3: {}'.format(filename))
@@ -82,11 +82,10 @@ def upload_blocks(matrix_name, bucket, s3_matrix_name=None):
             Key=os.path.join(s3_folder,filename)
         )
 
-def deploy_matrices(matrix_name):
-    _log('Uploading matrix to s3: {}'.format(matrix_name))
-    upload_blocks(matrix_name, BUCKET)
-    _log('Uploading matrix to s3: {}'.format(matrix_name + '-2'))
-    upload_blocks(matrix_name, BUCKET, s3_matrix_name=matrix_name + '-2')
+def deploy_matrices(matrix_names):
+    for matrix_name in matrix_names:
+        _log('Uploading matrix to s3: {}'.format(matrix_name))
+        upload_blocks(matrix_name, BUCKET)
 
 
 
@@ -261,7 +260,7 @@ BLOCK_SIZE = 1000
 BUCKET = 'jmue-multiplication-benchmarks'
 PREFIX = 'sq'
 BENCHMARKS_FOLDER = '/Users/Johannes/Uni/Master/Master Arbeit/repos/matrix-operations/benchmarks/'
-SFN_PREFIX = 'log-test'
+SFN_PREFIX = 'create-refactored-test'
 
 ########################
 ###   Main Programm  ###
@@ -279,8 +278,8 @@ _log('benchmark parameters:\n  BLOCK_SIZE:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCHM
 matrix_dimension_sets = [
         MatrixDimensions(height=2000, width=2000),
         # MatrixDimensions(height=3000, width=3000),
-        # MatrixDimensions(height=4000, width=4000)
-        # MatrixDimensions(height=5000, width=5000)
+        # MatrixDimensions(height=4000, width=4000),
+        # MatrixDimensions(height=8000, width=8000)
 ]
 
 _log(str(matrix_dimension_sets))
@@ -289,8 +288,9 @@ for matrix_dimensions in matrix_dimension_sets:
     matrix_name = '{}_{}kx{}k'.format(PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
     _log('Benchmarking {}'.format(matrix_name))
 
-    # create_matrices(matrix_dimensions, matrix_name)
-    # deploy_matrices(matrix_name)
+    
+    create_matrices(matrix_dimensions, matrix_names=[matrix_name, matrix_name+'-2'])
+    deploy_matrices(matrix_names=[matrix_name, matrix_name+'-2'])
 
     state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
     execution_info = invoke_matrix_multiplication(
