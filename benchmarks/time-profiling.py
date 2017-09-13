@@ -8,6 +8,7 @@ import os
 import boto3
 import json
 import base64
+import csv
 
 import pdb
 
@@ -138,7 +139,7 @@ def executions_pending(executionARNs):
         )['events'][0]
 
         if last_event['type'] == 'ExecutionFailed':
-            _log('Execution {} failed.'.format(xecutionArn))
+            _log('Execution {} failed.'.format(executionARN))
             pass
         elif last_event['type'] != 'ExecutionSucceeded':
             return True # Executions still pending
@@ -198,8 +199,8 @@ def plot_timing_profile(timings, lambda_type, state_machine_name, folder):
     p2 = plt.bar(index, timings.up, width, color='c', bottom=timings.down)
     p3 = plt.bar(index, timings.calculation, width, color='m', bottom=np.add(timings.down,timings.up))
 
-    # ax.set_ybound()
-    # ax.set_xbound()
+    # ax.set_ybound() # take the max value of execution plus 100
+    # ax.set_xbound() # number of intermediate lambdas?
 
     ax.set_ylabel('time in ms')
     ax.set_xlabel('execution index, 0 is averages across executions')
@@ -225,12 +226,8 @@ def collect_values(time_profiles_by_lambda, add_average=True):
       
     return Timings(s3_down, s3_up, calcs)
 
-def plot_time_profiles(time_profiles_by_lambda, state_machine_name):
+def plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder):
     _log("Plotting time profiles for {}".format(state_machine_name))
-
-    folder = os.path.join(BENCHMARKS_FOLDER,'block_size_{}'.format(BLOCK_SIZE))
-    if not os.path.exists(folder):
-        os.mkdir(folder)
 
     for lambda_type in time_profiles_by_lambda.keys():
         timings = collect_values(time_profiles_by_lambda[lambda_type], add_average=True)
@@ -238,8 +235,15 @@ def plot_time_profiles(time_profiles_by_lambda, state_machine_name):
 
 
 
-def save_raw_data(time_profiles):
-    pass
+def save_raw_data(time_profiles_by_lambda, csv_path):
+    _log("Writing time profiles to file: {}".format(csv_path))
+    with open(csv_path, 'wb') as file:
+        writer =  csv.writer(file, delimiter=',')
+        writer.writerow(['type','down','up','execution'])
+        for lambda_type in time_profiles_by_lambda.keys():
+            timings = time_profiles_by_lambda[lambda_type]
+            for t in timings:
+                writer.writerow([lambda_type, t['s3-down'], t['s3-up'], t['execution']])
 
 
 def compare_time_profiles():
@@ -256,7 +260,7 @@ BLOCK_SIZE = 1000
 BUCKET = 'jmue-multiplication-benchmarks'
 PREFIX = 'sq'
 BENCHMARKS_FOLDER = '/Users/Johannes/Uni/Master/Master Arbeit/repos/matrix-operations/benchmarks/'
-SFN_PREFIX = '3-benchmark'
+SFN_PREFIX = 'dual-impr-timing-benchmark'
 
 ########################
 ###   Main Programm  ###
@@ -266,8 +270,10 @@ _log('benchmark parameters:\n  BLOCK_SIZE:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCHM
     BLOCK_SIZE, BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
 
 matrix_dimension_sets = [
-        MatrixDimensions(height=2000, width=2000)
-        # MatrixDimensions(height=3000, width=3000)
+        MatrixDimensions(height=2000, width=2000),
+        # MatrixDimensions(height=3000, width=3000),
+        MatrixDimensions(height=4000, width=4000)
+        # MatrixDimensions(height=5000, width=5000)
 ]
 
 _log(str(matrix_dimension_sets))
@@ -280,7 +286,6 @@ for matrix_dimensions in matrix_dimension_sets:
     # deploy_matrices(matrix_name)
 
     state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
-
     execution_info = invoke_matrix_multiplication(
             state_machine_name=state_machine_name,
             executionName=state_machine_name,
@@ -292,7 +297,12 @@ for matrix_dimensions in matrix_dimension_sets:
     while executions_pending(split_executionARNs):
         sleep(2)
     
-    time_profiles = parse_time_profiles(split_executionARNs)
-    plot_time_profiles(time_profiles, state_machine_name)
+    folder = os.path.join(BENCHMARKS_FOLDER,'block_size_{}'.format(BLOCK_SIZE), SFN_PREFIX)
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
+    time_profiles_by_lambda = parse_time_profiles(split_executionARNs)
+    save_raw_data(time_profiles_by_lambda, csv_path=os.path.join(folder, state_machine_name + '.csv'))
+    plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder)
 
 # compare_time_profiles()
