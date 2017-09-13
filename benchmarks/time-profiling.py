@@ -34,7 +34,9 @@ sfn_client = boto3.client('stepfunctions')
 
 def _log(message):
     timestamp = datetime.now().strftime('%d.%m.%y %H:%M:%S > ')
+    LOG_FILE.write(timestamp + message)
     print timestamp + message
+
 
 
 def write_block_to_file(block, directory, row, column):
@@ -260,19 +262,25 @@ BLOCK_SIZE = 1000
 BUCKET = 'jmue-multiplication-benchmarks'
 PREFIX = 'sq'
 BENCHMARKS_FOLDER = '/Users/Johannes/Uni/Master/Master Arbeit/repos/matrix-operations/benchmarks/'
-SFN_PREFIX = 'dual-impr-timing-benchmark'
+SFN_PREFIX = 'log-test'
 
 ########################
 ###   Main Programm  ###
 ########################
 
-_log('benchmark parameters:\n  BLOCK_SIZE:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX'.format(
-    BLOCK_SIZE, BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
+# folder where all the plots, csv, and log files are written
+folder = os.path.join(BENCHMARKS_FOLDER,'block_size_{}'.format(BLOCK_SIZE), SFN_PREFIX)
+if not os.path.exists(folder):
+    os.mkdir(folder)
+LOG_FILE = open(os.path.join(folder, SFN_PREFIX + '.log'), 'a')
+
+_log('benchmark parameters:\n  BLOCK_SIZE:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX:{}'.format(
+                                BLOCK_SIZE, BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
 
 matrix_dimension_sets = [
         MatrixDimensions(height=2000, width=2000),
         # MatrixDimensions(height=3000, width=3000),
-        MatrixDimensions(height=4000, width=4000)
+        # MatrixDimensions(height=4000, width=4000)
         # MatrixDimensions(height=5000, width=5000)
 ]
 
@@ -296,13 +304,11 @@ for matrix_dimensions in matrix_dimension_sets:
     _log("Waiting for pending executions to finish...")
     while executions_pending(split_executionARNs):
         sleep(2)
-    
-    folder = os.path.join(BENCHMARKS_FOLDER,'block_size_{}'.format(BLOCK_SIZE), SFN_PREFIX)
-    if not os.path.exists(folder):
-        os.mkdir(folder)
 
     time_profiles_by_lambda = parse_time_profiles(split_executionARNs)
     save_raw_data(time_profiles_by_lambda, csv_path=os.path.join(folder, state_machine_name + '.csv'))
     plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder)
 
 # compare_time_profiles()
+
+LOG_FILE.close()
