@@ -53,23 +53,26 @@ def create_blocks_with_random(x, y, block_height, block_width, matrix_name):
     for i in range(0,x):
         for j in range(0,y):
             block = get_block_with_random(block_height, block_width)
-            directory = '/tmp/' + matrix_name
+            directory = DATA_DIR + matrix_name
             write_block_to_file(block, directory, i, j)
 
-def create_matrices(matrix_dimensions, matrix_names, block_size):
+def create_matrix(matrix_names, matrix_dimensions, block_size):
     x = matrix_dimensions.height/block_size
     y = matrix_dimensions.width/block_size
-    for matrix_name in matrix_names:
-        if os.path.exists('/tmp/{}'.format(matrix_name)):
-            _log("[WARNING] Matrix {} already exists locally. Skipping creation.".format(matrix_name))
-        else:
-            _log('Creating matrix: {}'.format(matrix_name))
-            create_blocks_with_random(x, y, block_size, block_size, matrix_name)
+    for matrix_name in matrix_names:        
+        _log('Creating matrix: {}'.format(matrix_name))
+        create_blocks_with_random(x, y, block_size, block_size, matrix_name)
+
+
+
+def created(matrix_name, matrix_dimensions, block_size):
+    file_count = os.listdir(os.path.join(DATA_DIR, matrix_name))
+    return file_count == (matrix_dimensions.height/block_size * matrix_dimensions.width/block_size)
 
 
 
 def upload_blocks(matrix_name, bucket):
-    localpath = '/tmp/' + matrix_name
+    localpath = DATA_DIR + matrix_name
     filenames = os.listdir(localpath)
 
     s3_folder = matrix_name
@@ -88,12 +91,9 @@ def deploy_matrices(matrix_names):
 
 
 
-def deployed(matrix_names, bucket, matrix_dimensions, block_size):
-    for matrix_name in matrix_names:
-        key_count = s3_client.list_objects_v2(Bucket=bucket, Prefix=matrix_name+'/')['KeyCount']
-        if key_count != (matrix_dimensions.height/block_size * matrix_dimensions.width/block_size):
-            return False # this one is not deployed yet
-    return True
+def deployed(matrix_name, bucket, matrix_dimensions, block_size):
+    key_count = s3_client.list_objects_v2(Bucket=bucket, Prefix=matrix_name+'/')['KeyCount']
+    return key_count == (matrix_dimensions.height/block_size * matrix_dimensions.width/block_size):
 
 
 
@@ -265,6 +265,7 @@ BUCKET = 'jmue-multiplication-benchmarks'
 PREFIX = 'sq'
 BENCHMARKS_FOLDER = '/Users/Johannes/Uni/Master/Master Arbeit/repos/matrix-operations/benchmarks/'
 SFN_PREFIX = 'v2_benchmark_bs2-(2)'
+DATA_DIR = '/Volumes/data/'
 
 ########################
 ###   Main Programm  ###
@@ -283,7 +284,7 @@ _log('benchmark parameters:\n  block_sizes:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCH
 matrix_dimension_sets = [
         # MatrixDimensions(height=2000, width=2000),
         # MatrixDimensions(height=3000, width=3000),
-        # MatrixDimensions(height=4000, width=4000),
+        MatrixDimensions(height=4000, width=4000),
         MatrixDimensions(height=8000, width=8000)
         ]
 _log('blocksize: {}'.format(block_sizes))
@@ -300,12 +301,16 @@ for block_size in block_sizes:
         _log('Benchmarking {} with blocksize={}'.format(matrix_name, block_size))
 
         matrix_names = [matrix_name, matrix_name+'-2']
-        create_matrices(matrix_dimensions, matrix_names, block_size)
-        
-        if not deployed(matrix_names, BUCKET, matrix_dimensions, block_size):
-            deploy_matrices(matrix_names)
-        else:
-            _log("Both matrices {} appear to be uploaded to S3. Skipping deployment.".format(matrix_names))
+        for matrix_name in matrix_names:
+            if not created(matrix_name, matrix_dimensions, block_size):
+                create_matrix(matrix_names, matrix_dimensions, block_size)
+            else:
+                _log("[WARNING]Matrix {} appears to be created already. Skipping creation.".format(matrix_names))
+            
+            if not deployed(matrix_name, BUCKET, matrix_dimensions, block_size):
+                deploy_matrices(matrix_names)
+            else:
+                _log("[WARNING]Matrix {} appears to be uploaded to S3. Skipping deployment.".format(matrix_names))
 
         state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
         execution_info = invoke_matrix_multiplication(
