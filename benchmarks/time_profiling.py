@@ -17,7 +17,7 @@ import pdb
 ###   NAMED TUPLES   ###
 ########################
 MatrixDimensions = namedtuple('MatrixDimensions', ['height', 'width'])
-Timings = namedtuple('Timings', ['down','up','calculation'])
+Timings = namedtuple('Timings', ['down', 'up', 'calculation'])
 
 
 ########################
@@ -56,44 +56,45 @@ def create_blocks_with_random(x, y, block_height, block_width, matrix_name):
             directory = DATA_DIR + matrix_name
             write_block_to_file(block, directory, i, j)
 
-def create_matrix(matrix_names, matrix_dimensions, block_size):
-    x = matrix_dimensions.height/block_size
-    y = matrix_dimensions.width/block_size
-    for matrix_name in matrix_names:        
+def created(matrix_name, matrix_dimensions, block_size):
+    if not os.path.exists(os.path.join(DATA_DIR, matrix_name)):
+        os.mkdir(os.path.join(DATA_DIR, matrix_name))
+        return False
+    else:
+        file_count = len(os.listdir(os.path.join(DATA_DIR, matrix_name)))
+        return file_count == (matrix_dimensions.height/block_size * matrix_dimensions.width/block_size)
+
+def create_matrix(matrix_name, matrix_dimensions, block_size):
+    if not created(matrix_name, matrix_dimensions, block_size):
+        x = matrix_dimensions.height/block_size
+        y = matrix_dimensions.width/block_size
         _log('Creating matrix: {}'.format(matrix_name))
         create_blocks_with_random(x, y, block_size, block_size, matrix_name)
+    else:
+        _log("[WARNING]Matrix {} appears to be created already. Skipping creation.".format(matrix_name))
 
 
 
-def created(matrix_name, matrix_dimensions, block_size):
-    file_count = os.listdir(os.path.join(DATA_DIR, matrix_name))
-    return file_count == (matrix_dimensions.height/block_size * matrix_dimensions.width/block_size)
-
-
-
-def upload_blocks(matrix_name, bucket):
-    localpath = DATA_DIR + matrix_name
-    filenames = os.listdir(localpath)
-
-    s3_folder = matrix_name
-    
-    for filename in filenames:
-        _log('Uploading to s3: {}'.format(filename))
-        s3_client.upload_file(
-                Filename=os.path.join(localpath,filename),
-                Bucket=bucket,
-                Key=os.path.join(s3_folder,filename))
-
-def deploy_matrices(matrix_names):
-    for matrix_name in matrix_names:
-        _log('Uploading matrix to s3: {}'.format(matrix_name))
-        upload_blocks(matrix_name, BUCKET)
-
-
-
-def deployed(matrix_name, bucket, matrix_dimensions, block_size):
+def deployed(matrix_name, bucket):
     key_count = s3_client.list_objects_v2(Bucket=bucket, Prefix=matrix_name+'/')['KeyCount']
-    return key_count == (matrix_dimensions.height/block_size * matrix_dimensions.width/block_size):
+    return key_count == len(os.listdir(os.path.join(DATA_DIR, matrix_name)))
+
+def deploy_matrix(matrix_name, bucket):
+    if not deployed(matrix_name, bucket):
+        _log('Uploading matrix to s3: {}'.format(matrix_name))
+        localpath = DATA_DIR + matrix_name
+        filenames = os.listdir(localpath)
+
+        s3_folder = matrix_name
+
+        for filename in filenames:
+            _log('Uploading to s3: {}'.format(filename))
+            s3_client.upload_file(
+                    Filename=os.path.join(localpath,filename),
+                    Bucket=bucket,
+                    Key=os.path.join(s3_folder,filename))
+    else:
+        _log("[WARNING]Matrix {} appears to be uploaded to S3. Skipping deployment.".format(matrix_name))
 
 
 
@@ -189,11 +190,11 @@ def parse_time_profiles(executionARNs):
 
 
 
-def plot_timing_profile(timings, lambda_type, state_machine_name, folder):
+def generate_plot(timings, lambda_type, state_machine_name, folder):
     # e.g. './block_size_1000/sq_2kx2k_intermediate.png'
     plot_path = '{}/{}_{}.png'.format(folder, state_machine_name, lambda_type)
     _log('Creating plot {}'.format(plot_path))
-    
+
     N = len(timings.down)
     index = np.arange(N)    # the x locations for the groups
     width = 0.5           # the width of the bars: can also be len(x) sequence
@@ -222,13 +223,13 @@ def collect_values(time_profiles_by_lambda, add_average=True):
         s3_down.append(item['s3-down'])
         s3_up.append(item['s3-up'])
         calcs.append(item['execution']-item['s3-down']-item['s3-up'])
-    
+
     if add_average:
         # add the average as the first value
         s3_down = np.append(np.average(s3_down), s3_down)
         s3_up = np.append(np.average(s3_up), s3_up)
         calcs = np.append(np.average(calcs), calcs)
-      
+
     return Timings(s3_down, s3_up, calcs)
 
 def plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder):
@@ -236,7 +237,7 @@ def plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder):
 
     for lambda_type in time_profiles_by_lambda.keys():
         timings = collect_values(time_profiles_by_lambda[lambda_type], add_average=True)
-        plot_timing_profile(timings, lambda_type, state_machine_name, folder)
+        generate_plot(timings, lambda_type, state_machine_name, folder)
 
 
 
@@ -264,70 +265,67 @@ def compare_time_profiles():
 BUCKET = 'jmue-multiplication-benchmarks'
 PREFIX = 'sq'
 BENCHMARKS_FOLDER = '/Users/Johannes/Uni/Master/Master Arbeit/repos/matrix-operations/benchmarks/'
-SFN_PREFIX = 'v2_benchmark_bs2-(2)'
+SFN_PREFIX = 'v3_benchmark_bs2'
 DATA_DIR = '/Volumes/data/'
 
 ########################
 ###   Main Programm  ###
 ########################
 
-log_path = os.path.join(BENCHMARKS_FOLDER, SFN_PREFIX)
-if not os.path.exists(log_path):
-    os.mkdir(log_path)
-LOG_FILE = open(os.path.join(log_path, SFN_PREFIX+'.log'), 'a')
+if __name__ == "__main__":
+    log_path = os.path.join(BENCHMARKS_FOLDER, SFN_PREFIX)
+    if not os.path.exists(log_path):
+        os.mkdir(log_path)
+    LOG_FILE = open(os.path.join(log_path, SFN_PREFIX+'.log'), 'a')
 
-block_sizes = [2000]
+    block_sizes = [2000]
 
-_log('benchmark parameters:\n  block_sizes:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX:{}'.format(
-                                block_sizes, BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
+    _log('benchmark parameters:\n  block_sizes:{}\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX:{}'.format(
+                                    block_sizes, BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
 
-matrix_dimension_sets = [
-        # MatrixDimensions(height=2000, width=2000),
-        # MatrixDimensions(height=3000, width=3000),
-        MatrixDimensions(height=4000, width=4000),
-        MatrixDimensions(height=8000, width=8000)
-        ]
-_log('blocksize: {}'.format(block_sizes))
-_log(str(matrix_dimension_sets))
+    matrix_dimension_sets = [
+            # MatrixDimensions(height=2000, width=2000),
+            # MatrixDimensions(height=3000, width=3000),
+            MatrixDimensions(height=4000, width=4000),
+            MatrixDimensions(height=8000, width=8000)
+            ]
+    _log('blocksize: {}'.format(block_sizes))
+    _log(str(matrix_dimension_sets))
 
-for block_size in block_sizes:
-    for matrix_dimensions in matrix_dimension_sets:
-        # folder where all the plots, csv, and log files are written
-        folder = os.path.join(BENCHMARKS_FOLDER, SFN_PREFIX, 'block_size_{}'.format(block_size))
-        if not os.path.exists(folder):
-            os.mkdir(folder)
+    for block_size in block_sizes:
+        for matrix_dimensions in matrix_dimension_sets:
+            # folder where all the plots, csv, and log files are written
+            folder = os.path.join(BENCHMARKS_FOLDER, SFN_PREFIX, 'block_size_{}'.format(block_size))
+            if not os.path.exists(folder):
+                os.mkdir(folder)
 
-        matrix_name = '{}_{}kx{}k_bs{}k'.format(PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000, block_size/1000)
-        _log('Benchmarking {} with blocksize={}'.format(matrix_name, block_size))
+            base_name = '{}_{}kx{}k_bs{}k'.format(PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000, block_size/1000)
+            matrix_names = [base_name, base_name+'-2']
+            _log('Benchmarking {} with blocksize={}'.format(base_name, block_size))
 
-        matrix_names = [matrix_name, matrix_name+'-2']
-        for matrix_name in matrix_names:
-            if not created(matrix_name, matrix_dimensions, block_size):
-                create_matrix(matrix_names, matrix_dimensions, block_size)
-            else:
-                _log("[WARNING]Matrix {} appears to be created already. Skipping creation.".format(matrix_names))
-            
-            if not deployed(matrix_name, BUCKET, matrix_dimensions, block_size):
-                deploy_matrices(matrix_names)
-            else:
-                _log("[WARNING]Matrix {} appears to be uploaded to S3. Skipping deployment.".format(matrix_names))
+            # prepare matrices
+            for matrix_name in matrix_names:
+                create_matrix(matrix_name, matrix_dimensions, block_size)
+                deploy_matrix(matrix_name, BUCKET)
 
-        state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
-        execution_info = invoke_matrix_multiplication(
-                state_machine_name=state_machine_name,
-                executionName=state_machine_name,
-                name_matrixA=matrix_names[0],
-                name_matrixB=matrix_names[1],
-                block_size=block_size)
-        split_executionARNs = [x['executionARN'] for x in execution_info['split-executions']]
-        _log("Waiting for pending executions to finish...")
-        while executions_pending(split_executionARNs):
-            sleep(2)
+            # start execution
+            state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
+            execution_info = invoke_matrix_multiplication(
+                    state_machine_name=state_machine_name,
+                    executionName=state_machine_name,
+                    name_matrixA=matrix_names[0],
+                    name_matrixB=matrix_names[1],
+                    block_size=block_size)
+            split_executionARNs = [x['executionARN'] for x in execution_info['split-executions']]
+            _log("Waiting for pending executions to finish...")
+            while executions_pending(split_executionARNs):
+                sleep(2)
 
-        time_profiles_by_lambda = parse_time_profiles(split_executionARNs)
-        save_raw_data(time_profiles_by_lambda, csv_path=os.path.join(folder, state_machine_name + '.csv'))
-        plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder)
+            # analyze results
+            time_profiles_by_lambda = parse_time_profiles(split_executionARNs)
+            save_raw_data(time_profiles_by_lambda, csv_path=os.path.join(folder, state_machine_name + '.csv'))
+            plot_time_profiles(time_profiles_by_lambda, state_machine_name, folder)
 
-# compare_time_profiles()
+    # compare_time_profiles()
 
-LOG_FILE.close()
+    LOG_FILE.close()
