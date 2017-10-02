@@ -135,12 +135,15 @@ functions:
     timeout: 300
 
   strassen-split-collector:
-    handler: strassen-split-services.collect
+    handler: strassen-unit-collector.handler
     package:
+      exclude:
+        - strassen-split-services.py
       include:
         - lib/**
         - numpy/**
         - numpy-1.13.0-py2.7.egg-info/**
+        - strassen-unit-collector.py
     memorySize: 1024
     timeout: 300
 
