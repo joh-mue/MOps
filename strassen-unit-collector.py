@@ -35,11 +35,14 @@ s3_client = boto3.client('s3')
 }
 '''
 s3_download_time = 0
+cached_files = 0
 
 def handler(event, context):
     execution_start = context.get_remaining_time_in_millis()
     global s3_download_time
+    global cached_files
     s3_download_time = 0
+    cached_files = 0
 
     result = event['result']
     OperationMetaData = namedtuple('OperationMetaData', ['bucket', 'folder', 'split', 'unit'])
@@ -68,19 +71,24 @@ def handler(event, context):
                 'lambda': 'collect'
             },
             'deploy-nr': deploy_nr,
-            'remaining_time_at_exec_start': execution_start
+            'remaining_time_at_exec_start': execution_start,
+            'cached-files': cached_files
     }
 
 
 def load_interm_result(op_meta_data, x):
     global s3_download_time
+    global cached_files
 
     filename = 'S{}_U{}_m{}'.format(op_meta_data.split, op_meta_data.unit, x)
-
-    start = time.time()
-    path = aws.download_s3_file(op_meta_data.bucket, op_meta_data.folder, filename, s3_client)
-    end = time.time()
-    s3_download_time = s3_download_time + int((end - start) * 1000)
+    path = os.path.join('/tmp/', op_meta_data.folder, filename)
+    if not os.path.exists(path):
+        start = time.time()
+        path = aws.download_s3_file(op_meta_data.bucket, op_meta_data.folder, filename, s3_client)
+        end = time.time()
+        s3_download_time = s3_download_time + int((end - start) * 1000)
+    else:
+        cached_files += 1
 
     return np.load(path)
 
