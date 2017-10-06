@@ -21,7 +21,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'COL107'
+deploy_nr = 'COL108'
 
 s3_client = boto3.client('s3')
 

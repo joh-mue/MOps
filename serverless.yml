@@ -39,23 +39,15 @@ provider:
 # you can add packaging information here
 package:
   individually: true
-  exclude:
-    - jupyter-notebooks/**
-    - events/**
-    - README.md
-    - preliminary-results.md
-    - lib/**
-    - numpy*/**
-    - scikit_learn-0.18.2.dist-info/**
-    - scipy*/**
-    - sklearn/**
-    - test-files/**
-    - strassen-test-script.py
-    - state-machines/**
-    - data/**
-    - benchmarks/**
-    - floatrix.*
-#  artifact: my-service-code.zip
+  exclude: # EXCLUDE ALL THE THINGS!
+    - ./**
+  include:
+    - aws.*
+    - split.*
+
+ # artifact: my-service-code.zip
+
+# TEST AND PLAY functions
 
 functions:
   floatrix:
@@ -76,33 +68,11 @@ functions:
         - lib/**
         - numpy/**
         - numpy-1.13.0-py2.7.egg-info/**
+        - strassen.*
         # - scikit_learn-0.18.2.dist-info/**
         # - scipy/**
         # - scipy-0.19.0-py2.7.egg-info/**
         # - sklearn/**
-    memorySize: 1024
-    timeout: 300
-
-  # MULTI LAMBDA Design
-  # FOR STEP FUNCTION
-
-  strassen-intermediate:
-    handler: strassen-services.intermediate
-    package:
-      include:
-        - lib/**
-        - numpy/**
-        - numpy-1.13.0-py2.7.egg-info/**
-    memorySize: 1024
-    timeout: 300
-
-  strassen-collector:
-    handler: strassen-services.collect
-    package:
-      include:
-        - lib/**
-        - numpy/**
-        - numpy-1.13.0-py2.7.egg-info/**
     memorySize: 1024
     timeout: 300
 
@@ -111,41 +81,144 @@ functions:
 
   multi-unit-multiplication:
     handler: multi-unit-multiplication.handler
+    package:
+      include:
+        - multi-unit-multiplication.*
+        - asl.py
     memorySize: 1024
     timeout: 300
 
-  unit-accumulator:
-    handler: unit-accumulator.accumulate
+  split-accumulator:
+    handler: split-accumulator.accumulate
     package:
       include:
+          - split-accumulator.*
           - lib/**
           - numpy/**
           - numpy-1.13.0-py2.7.egg-info/**
     memorySize: 1536
     timeout: 300
 
-  strassen-split-intermediate:
-    handler: strassen-split-services.intermediate
-    package:
-      include:
-        - lib/**
-        - numpy/**
-        - numpy-1.13.0-py2.7.egg-info/**
-    memorySize: 1024
-    timeout: 300
-
-  strassen-split-collector:
+  unit-collector:
     handler: strassen-unit-collector.handler
     package:
-      exclude:
-        - strassen-split-services.py
       include:
+        - strassen-unit-collector.*
+        - uni
         - lib/**
         - numpy/**
         - numpy-1.13.0-py2.7.egg-info/**
         - strassen-unit-collector.py
     memorySize: 1024
     timeout: 300
+
+  unit-intermediate-0:
+    handler: strassen-unit-intermediates.intermediate_0
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  unit-intermediate-1:
+    handler: strassen-unit-intermediates.intermediate_1
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  unit-intermediate-2:
+    handler: strassen-unit-intermediates.intermediate_2
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  unit-intermediate-3:
+    handler: strassen-unit-intermediates.intermediate_3
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  unit-intermediate-4:
+    handler: strassen-unit-intermediates.intermediate_4
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  unit-intermediate-5:
+    handler: strassen-unit-intermediates.intermediate_5
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  unit-intermediate-6:
+    handler: strassen-unit-intermediates.intermediate_6
+    package:
+      include:
+        - strassen-unit-intermediates.*
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+    memorySize: 1024
+    timeout: 300
+
+  # MULTI LAMBDA Design
+  # FOR STEP FUNCTION
+
+  # strassen-intermediate:
+  #   handler: strassen-services.intermediate
+  #   package:
+  #     include:
+  #       - lib/**
+  #       - numpy/**
+  #       - numpy-1.13.0-py2.7.egg-info/**
+  #   memorySize: 1024
+  #   timeout: 300
+
+  # strassen-collector:
+  #   handler: strassen-services.collect
+  #   package:
+  #     include:
+  #       - lib/**
+  #       - numpy/**
+  #       - numpy-1.13.0-py2.7.egg-info/**
+  #   memorySize: 1024
+  #   timeout: 300
+
+
+
+
+
+
+
+
 
 
 #    The following are a few example events you can configure

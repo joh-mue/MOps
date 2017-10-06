@@ -4,7 +4,7 @@ import os
 
 import asl
 
-deploy_nr = 'MUM101'
+deploy_nr = 'MUM102'
 
 sfn_client = boto3.client('stepfunctions')
 
@@ -50,7 +50,7 @@ def handler(event, context):
     for i in range(m):
         for k in range(p):
             print "Split_{} (x:{} y:{})".format(i*p+k, i, k),
-            executionARN = start_execution(i,k,p, event, state_machine_Arn)           
+            executionARN = start_execution(i,k,p, event, state_machine_Arn)
             executions.append({'split': i*p+k, 'executionARN': executionARN })
         print ""
 

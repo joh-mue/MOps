@@ -39,7 +39,7 @@ def accumulate(event, context):
         download_start = context.get_remaining_time_in_millis()
         partial_paths = load_all_partials(block_index, event['result'], event['split'])
         s3_download_time += download_start - context.get_remaining_time_in_millis()
-        
+
         # add them up
         shape = (event['split-size']/2, event['split-size']/2)
         final_block = np.zeros(shape, dtype=np.float)
@@ -89,7 +89,7 @@ def get_absolute_block_index(block_index, split, split_size):
     x, y = int(block_index[0]), int(block_index[1])
     x += split['x']/1000
     y += split['y']/1000
-    
+
     Index = namedtuple('Index', ['x','y'])
     block_size = split_size/2 # block is half as long as a split
     print("x:{}y:{}".format(x,y))

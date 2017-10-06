@@ -3,9 +3,16 @@
 import boto3
 import json
 
-INTERMEDIATE_ARN = "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-intermediate"
-COLLECTOR_ARN = "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-strassen-split-collector"
-ACCUMULATOR_ARN = "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-accumulator"
+INTERMEDIATE_ARNs = [
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-0",
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-1",
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-2",
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-3",
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-4",
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-5",
+        "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-intermediate-6"]
+COLLECTOR_ARN = "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-unit-collector"
+ACCUMULATOR_ARN = "arn:aws:lambda:eu-central-1:146904559692:function:mmultiply-prod-split-accumulator"
 
 def _task_state(resource, next_state=None):
     task_state = {
@@ -35,10 +42,10 @@ def _parallel_state(branches, next_state, resultPath=None, outputPath=None):
     }
     if resultPath is not None:
         parallel_state["ResultPath"] = resultPath
-    
+
     if outputPath is not None:
         parallel_state["OutputPath"] = outputPath
-    
+
     return parallel_state
 
 def _branch(startAt, states):
@@ -50,22 +57,20 @@ def _branch(startAt, states):
 def _create_strassen_sfn(unit):
     branches = []
     for index in range(0,7):
-        unit_m = "U{}_m{}".format(unit, index) # U0_m_0
         unit_m_lambda = "U{}_m{}_lambda".format(unit, index) # U0_m_0_lambda
         states = {
-            unit_m: _pass_state(next_state=unit_m_lambda, result=index, resultPath="$.intermediate", outputPath="$"),
-            unit_m_lambda: _task_state(resource=INTERMEDIATE_ARN)
+            unit_m_lambda: _task_state(resource=INTERMEDIATE_ARNs[index])
         }
-        branches.append(_branch(states=states, startAt=unit_m))
+        branches.append(_branch(states=states, startAt=unit_m_lambda))
 
     unit_name = "unit" + str(unit)
     i_name = "U{}_Intermediate".format(unit)
     c_name = "U{}_Collect".format(unit)
-    
+
     unit_setup = _pass_state(next_state=i_name, result=unit, resultPath="$.unit", outputPath="$")
     intermediates = _parallel_state(branches=branches, next_state=c_name, resultPath="$.responses", outputPath="$")
     collect = _task_state(resource=COLLECTOR_ARN)
-        
+
     states = { unit_name: unit_setup, i_name: intermediates, c_name: collect }
     return _branch(startAt=unit_name, states=states)
 
