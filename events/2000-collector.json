@@ -1,0 +1,27 @@
+{
+  "executionName": "2kx2k-online-profiled-2",
+  "split-size": 2000,
+  "state-machine-name": "multi-unit-mmultiply-2kx2k",
+  "matB": {
+    "folder": "square_matrix_2kx2k-2",
+    "rows": 2000,
+    "bucket": "jmue-matrix-tests",
+    "columns": 2000
+  },
+  "result": {
+    "folder": "square_matrix_2kx2k-result",
+    "bucket": "jmue-matrix-tests",
+    "split": {
+      "y": 0,
+      "x": 0
+    }
+  },
+  "matA": {
+    "folder": "square_matrix_2kx2k",
+    "rows": 2000,
+    "bucket": "jmue-matrix-tests",
+    "columns": 2000
+  },
+  "split": 0,
+  "unit": 0
+}

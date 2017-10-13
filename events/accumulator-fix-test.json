@@ -1,0 +1,50 @@
+{
+  "executionName": "dual-impr-timing-benchmark-4kx4k",
+  "split-size": 2000,
+  "state-machine-name": "dual-impr-timing-benchmark-4kx4k",
+  "matB": {
+    "folder": "sq_4kx4k-2",
+    "rows": 4000,
+    "bucket": "jmue-multiplication-benchmarks",
+    "columns": 4000
+  },
+  "result": {
+    "folder": "sq_4kx4k-result",
+    "bucket": "jmue-multiplication-benchmarks",
+    "split": {
+      "y": 0,
+      "x": 2000
+    }
+  },
+  "matA": {
+    "folder": "sq_4kx4k",
+    "rows": 4000,
+    "bucket": "jmue-multiplication-benchmarks",
+    "columns": 4000
+  },
+  "split": 2,
+  "responses": [
+    {
+      "deploy-nr": "UNI104",
+      "that-start-value": 0,
+      "remaining_time_at_exec_start": 299999,
+      "time-profile": {
+        "s3-up": 2475,
+        "execution": 7532,
+        "s3-down": 4980,
+        "lambda": "collect"
+      }
+    },
+    {
+      "deploy-nr": "UNI104",
+      "that-start-value": 0,
+      "remaining_time_at_exec_start": 299999,
+      "time-profile": {
+        "s3-up": 1381,
+        "execution": 3940,
+        "s3-down": 2470,
+        "lambda": "collect"
+      }
+    }
+  ]
+}
