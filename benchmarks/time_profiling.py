@@ -214,15 +214,23 @@ def save_raw_data(time_profiles_by_lambda, csv_path):
 
 
 def create_plots_per_lambda(csv_path, state_machine_name, to_file=True):
-    for lambda_type in ['intermediate', 'collect', 'accumulate']:
-        lambda_timings = load_timings(csv_path, lambda_type)
-        plot_time_profile(with_average(lambda_timings), lambda_type, state_machine_name, os.path.dirname(csv_path), to_file)
-        plot_time_distribution(lambda_timings, lambda_type, state_machine_name, os.path.dirname(csv_path), to_file)
+    xbound, ybound = find_bounds(csv_path)
+    for l_type in ['intermediate', 'collect', 'accumulate']:
+        lambda_timings = load_timings(csv_path, l_type)
+        plot_time_profile(with_average(lambda_timings), l_type, state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound, xbound=xbound)
+        plot_time_distribution(lambda_timings, l_type, state_machine_name, os.path.dirname(csv_path), to_file)
 
 def create_combined_plots(csv_path, state_machine_name, to_file=True):
+    xbound, ybound = find_bounds(csv_path)
     combined_timings = load_timings(csv_path)
-    plot_time_profile(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file)
+    plot_time_profile(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound)
     plot_time_distribution(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file)
+
+def find_bounds(csv_path):
+    xbound = len(load_timings(csv_path, 'intermediate').down) + 1 # number of entries for intermediates
+    timings = load_timings(csv_path)
+    ybound = max(timings.down + timings.up + timings.calculation) * 1.1
+    return (xbound, ybound)
 
 def load_timings(csv_path, lambda_type=None):
     with open(csv_path, 'r') as f:
@@ -242,7 +250,7 @@ def with_average(timings):
     calculation = np.append(timings.calculation, np.average(timings.calculation))
     return Timings(down, up, calculation)
 
-def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, to_file=True):
+def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, to_file=True, ybound=None, xbound=None):
     _log('Creating plot {} profile {}'.format(state_machine_name, lambda_type))
 
     N = len(timings.down)
@@ -255,8 +263,10 @@ def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, t
     p2 = plt.bar(index, timings.up, width, color='c', bottom=timings.down)
     p3 = plt.bar(index, timings.calculation, width, color='m', bottom=np.add(timings.down,timings.up))
 
-    ax.set_ybound(0, 15000) # take the max value of execution plus 100
-    ax.set_xbound(-0.5, 7.5) # number of intermediate lambdas?
+    if ybound is not None:
+        ax.set_ybound(0, ybound)
+    if xbound is not None:
+        ax.set_xbound(-0.5, xbound) # number of intermediate lambdas?
 
     ax.set_ylabel('time in ms')
     ax.set_xlabel('execution index, last one is averages across executions')
