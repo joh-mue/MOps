@@ -19,7 +19,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'ACC104'
+deploy_nr = 'ACC105'
 
 s3_client = boto3.client('s3')
 
@@ -58,6 +58,7 @@ def accumulate(event, context):
         s3_upload_time += upload_start - context.get_remaining_time_in_millis()
 
     execution_time = execution_start - context.get_remaining_time_in_millis()
+    aws.cleanup_tmp()
     return {
             'time-profile':{
                 's3-up': s3_upload_time,
