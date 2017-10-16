@@ -120,7 +120,7 @@ REPORT RequestId: d0ccc7aa-8c90-11e7-af2b-47d16c6cff42  Duration: 86631.57 ms Bi
 --------------------------------------------------------------------
 START RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede Version: $LATEST
 END RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede
-REPORT RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede  Duration: 125974.67 ms  Billed Duration: 126000 ms  Memory Size: 1536 MB  Max Memory Used: 878 MB 
+REPORT RequestId: 6e120d83-8c92-11e7-b4bc-01142a109ede  Duration: 125974.67 ms  Billed Duration: 126000 ms  Memory Size: 1536 MB  Max Memory Used: 878 MB
 
 
 
@@ -146,7 +146,7 @@ REPORT RequestId: e6cabe89-8c92-11e7-8d5a-1dafcea2aea8  Duration: 295271.89 ms  
 --------------------------------------------------------------------
 START RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af Version: $LATEST
 END RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af
-REPORT RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af  Duration: 298107.36 ms  Billed Duration: 298200 ms  Memory Size: 1536 MB    Max Memory Used: 1525 MB    
+REPORT RequestId: 576b2f0a-8c94-11e7-b1b0-1b3b212580af  Duration: 298107.36 ms  Billed Duration: 298200 ms  Memory Size: 1536 MB    Max Memory Used: 1525 MB
 
 date; and sls invoke -v --log --function floatrix --data '{ "columns": 5500, "rows": 5500 }'
 Tue Aug 29 10:06:31 CEST 2017
@@ -191,3 +191,17 @@ Tue Aug 29 10:11:45 CEST 2017
 START RequestId: fbb97039-8c91-11e7-889d-f508bb040a2d Version: $LATEST
 END RequestId: fbb97039-8c91-11e7-889d-f508bb040a2d
 REPORT RequestId: fbb97039-8c91-11e7-889d-f508bb040a2d  Duration: 112808.89 ms  Billed Duration: 112900 ms  Memory Size: 1536 MB    Max Memory Used: 876 MB
+
+
+
+{
+  "calculation": 220434,
+  "rows": 7000,
+  "remaining": 77992,
+  "columns": 7000,
+  "generating matrices": 1573
+}
+--------------------------------------------------------------------
+START RequestId: 593fe238-b0fe-11e7-a03b-978ff9df69b6 Version: $LATEST
+END RequestId: 593fe238-b0fe-11e7-a03b-978ff9df69b6
+REPORT RequestId: 593fe238-b0fe-11e7-a03b-978ff9df69b6  Duration: 222034.58 ms  Billed Duration: 222100 ms  Memory Size: 1536 MB    Max Memory Used: 1184 MB

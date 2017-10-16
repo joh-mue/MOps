@@ -112,6 +112,7 @@ def execute_sfn(state_machine_name, matrix_names, block_size):
     _log("Waiting for pending executions to finish...")
     while executions_pending(split_executionARNs):
         sleep(2)
+    return split_executionARNs
 
 def invoke_matrix_multiplication(state_machine_name, executionName, name_matrixA, name_matrixB, block_size):
     """ execution_info.keys() :> ['deploy-nr', 'split-executions', 'split'] """
@@ -167,11 +168,11 @@ def executions_pending(executionARNs):
     return False
 
 
-
-def parse_time_profiles(executionARNs):
-    events = get_all_events(executionARNs)
+def retrieve_events_and_save_data(split_executionARNs, csv_path):
+    events = get_all_events(split_executionARNs)
+    save_sfn_metadata(events, csv_path)
     time_profiles_by_lambda = extract_time_profiles(events)
-    return time_profiles_by_lambda
+    save_raw_data(time_profiles_by_lambda, csv_path)
 
 def get_all_events(executionARNs):
     events = []
@@ -188,6 +189,16 @@ def get_all_events(executionARNs):
             events.extend(response['events'])
     return events
 
+def save_sfn_metadata(events, csv_path):
+    last_event = events[len(events)-1]
+    first_event = events[0]
+    timedelta = last_event['timestamp'] - first_event['timestamp']
+    _log("Execution took {}s".format(timedelta.seconds))
+    meta_data_path = csv_path.replace('.csv', '-meta.json')
+    with open(meta_data_path, 'w') as file:
+        json.dump({'stepfunction time': timedelta.seconds , 'ExecutionSucceeded': last_event.keys()[0]}, file)
+
+
 def extract_time_profiles(events):
     """ Time profiles are part of the lambda output which is returned as a json formated string """
     _log("Extracting time profiles")
@@ -198,8 +209,6 @@ def extract_time_profiles(events):
     for profile in time_profiles:
         time_profiles_by_lambda[profile['lambda']].append(profile)
     return time_profiles_by_lambda
-
-
 
 def save_raw_data(time_profiles_by_lambda, csv_path):
     _log("Writing time profiles to file: {}".format(csv_path))
@@ -242,7 +251,7 @@ def load_timings(csv_path, lambda_type=None):
                 up.append(row['up'])
                 down.append(row['down'])
                 calculation.append(int(row['execution']) - int(row['down']) - int(row['up']))
-    return Timings(np.array(up, dtype=int), np.array(down, dtype=int), np.array(calculation, dtype=int))
+    return Timings(down=np.array(down, dtype=int), up=np.array(up, dtype=int), calculation=np.array(calculation, dtype=int))
 
 def with_average(timings):
     down = np.append(timings.down, np.average(timings.down))
@@ -278,26 +287,28 @@ def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, t
         plt.savefig(join(BENCHMARKS_FOLDER, plot_path), dpi=500)
     else:
         plt.show()
+    plt.close()
 
 def plot_time_distribution(timings, lambda_type, state_machine_name, plot_dir, to_file=True):
     _log('Creating plot {} distribution {}'.format(state_machine_name, lambda_type))
 
-    up, down, calculation = np.average(timings.up), np.average(timings.down), np.average(timings.calculation)
+    up_avg, down_avg, calc_avg = np.average(timings.up), np.average(timings.down), np.average(timings.calculation)
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
-    labels = 'S3 upload\n({}ms)'.format(int(up)), 'S3 download\n({}ms)'.format(int(down)), 'calculation\n({}ms)'.format(int(calculation))
-    sizes = [up, down, calculation]
+    labels = 'S3 upload\n({}ms)'.format(int(up_avg)), 'S3 download\n({}ms)'.format(int(down_avg)), 'calculation\n({}ms)'.format(int(calc_avg))
+    sizes = [up_avg, down_avg, calc_avg]
     explode = (0, 0, 0.1)  # only "explode" the 3nd slice
 
     fig1, ax = plt.subplots()
     ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%', shadow=False, startangle=90, colors=['c','b','m'])
     ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax.set_title('Time spent on S3 upload, S3 download and actual calculation in percent.')
+    ax.set_title('Time spent on S3 upload, S3 download\nand calculation for {}-lambdas.'.format(lambda_type))
 
     if to_file:
         plot_path = '{}/{}_{}_dist.png'.format(plot_dir, state_machine_name, lambda_type)
         plt.savefig(join(BENCHMARKS_FOLDER, plot_path), dpi=500)
     else:
         plt.show()
+    plt.close()
 
 
 
@@ -314,7 +325,7 @@ def compare_time_profiles():
 BUCKET = 'jmue-multiplication-benchmarks'
 PREFIX = 'sq'
 BENCHMARKS_FOLDER = '/Users/Johannes/Uni/Master/Master Arbeit/repos/matrix-operations/benchmarks/'
-SFN_PREFIX = 'v3_fixed_benchmark_bs2'
+SFN_PREFIX = 'v5_benchmark'
 DATA_DIR = '/Volumes/data/'
 
 ########################
@@ -322,17 +333,20 @@ DATA_DIR = '/Volumes/data/'
 ########################
 
 if __name__ == "__main__":
-
     # set SFN_PREFIX akkording to commandline argument
     if len(sys.argv) > 1:
         SFN_PREFIX = sys.argv[1]
+
+    replotting = False
+    if len(sys.argv) > 2:
+        replotting = sys.argv[2] == 'replot'
 
     log_path = join(BENCHMARKS_FOLDER, SFN_PREFIX)
     if not os.path.exists(log_path):
         os.mkdir(log_path)
     LOG_FILE = open(join(log_path, SFN_PREFIX+'.log'), 'a')
 
-    block_sizes = [2000]
+    block_sizes = [3000]
 
     _log('\nBenchmark Parameters:\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX:{}'.format(
                                    BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
@@ -340,8 +354,10 @@ if __name__ == "__main__":
     matrix_dimension_sets = [
             # MatrixDimensions(height=2000, width=2000),
             # MatrixDimensions(height=3000, width=3000),
-            MatrixDimensions(height=4000, width=4000)#,
-            # MatrixDimensions(height=8000, width=8000)
+            # MatrixDimensions(height=4000, width=4000),
+            MatrixDimensions(height=6000, width=6000),
+            # MatrixDimensions(height=10000, width=10000)#,
+            # MatrixDimensions(height=12000, width=12000)
             ]
     _log('blocksizes: {}'.format(block_sizes))
     _log('matrix dimensions: {}'.format(matrix_dimension_sets))
@@ -358,18 +374,20 @@ if __name__ == "__main__":
             _log('Benchmarking {} with blocksize={}'.format(base_name, block_size))
 
             # prepare matrices
-            for matrix_name in matrix_names:
-                create_matrix(matrix_name, matrix_dimensions, block_size)
-                deploy_matrix(matrix_name, BUCKET)
+            if not replotting:
+                for matrix_name in matrix_names:
+                    create_matrix(matrix_name, matrix_dimensions, block_size)
+                    deploy_matrix(matrix_name, BUCKET)
 
             # start execution
             state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
-            execute_sfn(state_machine_name, matrix_names, block_size)
+            if not replotting:
+                split_executionARNs = execute_sfn(state_machine_name, matrix_names, block_size)
 
             # retrieve and save data
-            time_profiles_by_lambda = parse_time_profiles(split_executionARNs)
             csv_path = join(folder, state_machine_name + '.csv')
-            save_raw_data(time_profiles_by_lambda, csv_path)
+            if not replotting:
+                retrieve_events_and_save_data(split_executionARNs, csv_path)
 
             # evaluate results and create plots
             create_plots_per_lambda(csv_path, state_machine_name)
