@@ -5,6 +5,7 @@ from time import sleep
 from os.path import join
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import os
 import boto3
 import json
@@ -101,22 +102,23 @@ def deployed(matrix_name, bucket):
 
 
 
-def execute_sfn(state_machine_name, matrix_names, block_size):
+def execute_sfn(state_machine_name, matrix_names, block_size, split_size):
     execution_info = invoke_matrix_multiplication(
                     state_machine_name=state_machine_name,
                     executionName=state_machine_name,
                     name_matrixA=matrix_names[0],
                     name_matrixB=matrix_names[1],
-                    block_size=block_size)
+                    block_size=block_size,
+                    split_size=split_size)
     split_executionARNs = [x['executionARN'] for x in execution_info['split-executions']]
     _log("Waiting for pending executions to finish...")
     while executions_pending(split_executionARNs):
         sleep(2)
     return split_executionARNs
 
-def invoke_matrix_multiplication(state_machine_name, executionName, name_matrixA, name_matrixB, block_size):
+def invoke_matrix_multiplication(state_machine_name, executionName, name_matrixA, name_matrixB, block_size, split_size):
     """ execution_info.keys() :> ['deploy-nr', 'split-executions', 'split'] """
-    sfn_input = create_input(state_machine_name, executionName, name_matrixA, name_matrixB, block_size)
+    sfn_input = create_input(state_machine_name, executionName, name_matrixA, name_matrixB, block_size, split_size)
     _log("Invoking matrix multiplication with input: {}".format(sfn_input))
     response = lambda_client.invoke(
             FunctionName='mmultiply-prod-multi-unit-multiplication',
@@ -126,27 +128,30 @@ def invoke_matrix_multiplication(state_machine_name, executionName, name_matrixA
     _log('LogResult: \n{}'.format(base64.b64decode(response['LogResult'])))
     return json.loads(response['Payload'].read())
 
-def create_input(state_machine_name, executionName, name_matrixA, name_matrixB, block_size):
+def create_input(state_machine_name, executionName, name_matrixA, name_matrixB, block_size, split_size):
     input = {
             'state-machine-name': state_machine_name,
             'executionName': executionName,
             'matA': {
-            'bucket': BUCKET,
-            'folder': name_matrixA,
-            'rows': matrix_dimensions.height,
-            'columns': matrix_dimensions.width
+                'bucket': BUCKET,
+                'folder': name_matrixA,
+                'block-size': block_size,
+                'rows': matrix_dimensions.height,
+                'columns': matrix_dimensions.width
             },
             'matB': {
-              'bucket': BUCKET,
-              'folder': name_matrixB,
-              'rows': matrix_dimensions.height,
-              'columns': matrix_dimensions.height
+                'bucket': BUCKET,
+                'folder': name_matrixB,
+                'block-size': block_size,
+                'rows': matrix_dimensions.height,
+                'columns': matrix_dimensions.height
             },
             'result': {
-              'bucket': BUCKET,
-              'folder': name_matrixA + '-result'
+                'bucket': BUCKET,
+                'folder': name_matrixA + '-result',
+                'block-size': block_size
             },
-            'split-size': block_size * 2
+            'split-size': split_size
         }
     return input
 
@@ -194,9 +199,9 @@ def save_sfn_metadata(events, csv_path):
     first_event = events[0]
     timedelta = last_event['timestamp'] - first_event['timestamp']
     _log("Execution took {}s".format(timedelta.seconds))
-    meta_data_path = csv_path.replace('.csv', '-meta.json')
-    with open(meta_data_path, 'w') as file:
-        json.dump({'stepfunction time': timedelta.seconds , 'ExecutionSucceeded': last_event.keys()[0]}, file)
+    # meta_data_path = csv_path.replace('.csv', '-meta.json')
+    # with open(meta_data_path, 'w') as file:
+    #     json.dump({'stepfunction time': timedelta.seconds , 'ExecutionSucceeded': last_event.keys()[0]}, file)
 
 
 def extract_time_profiles(events):
@@ -226,14 +231,21 @@ def create_plots_per_lambda(csv_path, state_machine_name, to_file=True):
     xbound, ybound = find_bounds(csv_path)
     for l_type in ['intermediate', 'collect', 'accumulate']:
         lambda_timings = load_timings(csv_path, l_type)
-        plot_time_profile(with_average(lambda_timings), l_type, state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound, xbound=xbound)
-        plot_time_distribution(lambda_timings, l_type, state_machine_name, os.path.dirname(csv_path), to_file)
+        if (any(map(lambda x: len(x) == 0, lambda_timings))):
+            _log('[Warning] Timings for {}-lambdas incomplete. Skipping plotting.'.format(l_type))
+        else:
+            plot_time_profile(with_average(lambda_timings), l_type, state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound, xbound=xbound)
+            plot_time_distribution(lambda_timings, l_type, state_machine_name, os.path.dirname(csv_path), to_file)
 
 def create_combined_plots(csv_path, state_machine_name, to_file=True):
     xbound, ybound = find_bounds(csv_path)
     combined_timings = load_timings(csv_path)
-    plot_time_profile(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound)
-    plot_time_distribution(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file)
+    if (any(map(lambda x: len(x) == 0, combined_timings))):
+        _log('[Warning] Timings incomplete. Skipping plotting.')
+        return
+    else:
+        plot_time_profile(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound)
+        plot_time_distribution(combined_timings, 'combined', state_machine_name, os.path.dirname(csv_path), to_file)
 
 def find_bounds(csv_path):
     xbound = len(load_timings(csv_path, 'intermediate').down) + 1 # number of entries for intermediates
@@ -266,6 +278,9 @@ def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, t
     index = np.arange(N)    # the x locations for the groups
     width = 0.5           # the width of the bars: can also be len(x) sequence
 
+    # matplotlib.rcParams.update({'font.size': 15})
+    # matplotlib.rcParams.update({'figure.autolayout': True})
+
     fig, ax = plt.subplots()
 
     p1 = plt.bar(index, timings.down, width, color='b')
@@ -279,7 +294,7 @@ def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, t
 
     ax.set_ylabel('time in ms')
     ax.set_xlabel('execution index, last one is averages across executions')
-    ax.set_title('Timing profiles for {}-lambda executions.'.format(lambda_type))
+    # ax.set_title('Timing profiles for {}-lambda executions.'.format(lambda_type))
     ax.legend((p3, p2, p1), ('Calculation', 'S3 upload','S3 download'), loc=4)
 
     if to_file:
@@ -298,10 +313,13 @@ def plot_time_distribution(timings, lambda_type, state_machine_name, plot_dir, t
     sizes = [up_avg, down_avg, calc_avg]
     explode = (0, 0, 0.1)  # only "explode" the 3nd slice
 
+    # matplotlib.rcParams.update({'font.size': 15})
+    # matplotlib.rcParams.update({'figure.autolayout': True})
+
     fig1, ax = plt.subplots()
     ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%', shadow=False, startangle=90, colors=['c','b','m'])
     ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax.set_title('Time spent on S3 upload, S3 download\nand calculation for {}-lambdas.'.format(lambda_type))
+    # ax.set_title('Time spent on S3 upload, S3 download\nand calculation for {}-lambdas.'.format(lambda_type))
 
     if to_file:
         plot_path = '{}/{}_{}_dist.png'.format(plot_dir, state_machine_name, lambda_type)
@@ -330,6 +348,9 @@ DATA_DIR = '/Volumes/data/'
 
 ########################
 ###   Main Programm  ###
+###                  ###
+### usage            ###
+### ./time_profiling [SFN_NAME] (replot)
 ########################
 
 if __name__ == "__main__":
@@ -346,7 +367,8 @@ if __name__ == "__main__":
         os.mkdir(log_path)
     LOG_FILE = open(join(log_path, SFN_PREFIX+'.log'), 'a')
 
-    block_sizes = [3000]
+    block_sizes = [4000]
+    split_size = 8000
 
     _log('\nBenchmark Parameters:\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX:{}'.format(
                                    BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
@@ -355,10 +377,11 @@ if __name__ == "__main__":
             # MatrixDimensions(height=2000, width=2000),
             # MatrixDimensions(height=3000, width=3000),
             # MatrixDimensions(height=4000, width=4000),
-            MatrixDimensions(height=6000, width=6000),
+            MatrixDimensions(height=16000, width=16000),
             # MatrixDimensions(height=10000, width=10000)#,
             # MatrixDimensions(height=12000, width=12000)
             ]
+
     _log('blocksizes: {}'.format(block_sizes))
     _log('matrix dimensions: {}'.format(matrix_dimension_sets))
 
@@ -382,7 +405,7 @@ if __name__ == "__main__":
             # start execution
             state_machine_name = '{}-{}kx{}k'.format(SFN_PREFIX, matrix_dimensions.height/1000, matrix_dimensions.width/1000)
             if not replotting:
-                split_executionARNs = execute_sfn(state_machine_name, matrix_names, block_size)
+                split_executionARNs = execute_sfn(state_machine_name, matrix_names, block_size, split_size)
 
             # retrieve and save data
             csv_path = join(folder, state_machine_name + '.csv')
