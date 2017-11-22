@@ -1,0 +1,403 @@
+t2.small
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 26462)
+('calculation_time: ', 29110)
+('upload_time: ', 9695)
+('execution_time: ', 66973)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 21989)
+('calculation_time: ', 29113)
+('upload_time: ', 13169)
+('execution_time: ', 65999)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 25351)
+('calculation_time: ', 29000)
+('upload_time: ', 14699)
+('execution_time: ', 70765)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 4 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 6181)
+('calculation_time: ', 3705)
+('upload_time: ', 3240)
+('execution_time: ', 13545)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 4 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 5626)
+('calculation_time: ', 3713)
+('upload_time: ', 4004)
+('execution_time: ', 13753)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 4 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 11248)
+('calculation_time: ', 3707)
+('upload_time: ', 3152)
+('execution_time: ', 18522)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 2 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 2830)
+('calculation_time: ', 476)
+('upload_time: ', 1160)
+('execution_time: ', 4560)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 2 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 2803)
+('calculation_time: ', 475)
+('upload_time: ', 935)
+('execution_time: ', 4308)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 2 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 2716)
+('calculation_time: ', 475)
+('upload_time: ', 903)
+('execution_time: ', 4190)
+
+--------------------
+
+
+t2.micro
+python ec2_benchmark.py sq_4kx4k_bs2k sq_4kx4k_bs2k-2
+Getting all keys
+['sq_4kx4k_bs2k/m_0_0.npy', 'sq_4kx4k_bs2k/m_0_1.npy', 'sq_4kx4k_bs2k/m_1_0.npy', 'sq_4kx4k_bs2k/m_1_1.npy']
+['sq_4kx4k_bs2k-2/m_0_0.npy', 'sq_4kx4k_bs2k-2/m_0_1.npy', 'sq_4kx4k_bs2k-2/m_1_0.npy', 'sq_4kx4k_bs2k-2/m_1_1.npy']
+Downloading matrix A
+Downloading matrix B
+Building matrices
+performing calculation
+Splitting result
+uploading results
+('download_time: ', 5653)
+('calculation_time: ', 3764)
+('upload_time: ', 4133)
+('execution_time: ', 14475)
+
+python ec2_benchmark.py sq_4kx4k_bs2k sq_4kx4k_bs2k-2
+Getting all keys
+['sq_4kx4k_bs2k/m_0_0.npy', 'sq_4kx4k_bs2k/m_0_1.npy', 'sq_4kx4k_bs2k/m_1_0.npy', 'sq_4kx4k_bs2k/m_1_1.npy']
+['sq_4kx4k_bs2k-2/m_0_0.npy', 'sq_4kx4k_bs2k-2/m_0_1.npy', 'sq_4kx4k_bs2k-2/m_1_0.npy', 'sq_4kx4k_bs2k-2/m_1_1.npy']
+Downloading matrix A
+Downloading matrix B
+Building matrices
+performing calculation
+Splitting result
+uploading results
+('download_time: ', 6694)
+('calculation_time: ', 3736)
+('upload_time: ', 4131)
+('execution_time: ', 15458)
+
+[ec2-user@ip-172-31-29-245 ~]$ python ec2_benchmark.py 4 2
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 5942)
+('calculation_time: ', 3696)
+('upload_time: ', 3663)
+('execution_time: ', 13716)
+
+
+------------------
+m4.xlarge
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py sq_4kx4k_bs2k sq_4kx4k_bs2k-2
+Getting all keys
+['sq_4kx4k_bs2k/m_0_0.npy', 'sq_4kx4k_bs2k/m_0_1.npy', 'sq_4kx4k_bs2k/m_1_0.npy', 'sq_4kx4k_bs2k/m_1_1.npy']
+['sq_4kx4k_bs2k-2/m_0_0.npy', 'sq_4kx4k_bs2k-2/m_0_1.npy', 'sq_4kx4k_bs2k-2/m_1_0.npy', 'sq_4kx4k_bs2k-2/m_1_1.npy']
+Downloading matrix A
+Downloading matrix B
+Building matrices
+performing calculation
+Splitting result
+uploading results
+('download_time: ', 3649)
+('calculation_time: ', 2317)
+('upload_time: ', 3147)
+('execution_time: ', 10078)
+
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py sq_8kx8k_bs4k sq_8kx8k_bs4k-2
+Getting all keys
+['sq_8kx8k_bs4k/m_0_0.npy', 'sq_8kx8k_bs4k/m_0_1.npy', 'sq_8kx8k_bs4k/m_1_0.npy', 'sq_8kx8k_bs4k/m_1_1.npy']
+['sq_8kx8k_bs4k-2/m_0_0.npy', 'sq_8kx8k_bs4k-2/m_0_1.npy', 'sq_8kx8k_bs4k-2/m_1_0.npy', 'sq_8kx8k_bs4k-2/m_1_1.npy']
+Downloading matrix A
+Downloading matrix B
+Building matrices
+performing calculation
+Splitting result
+uploading results
+('download_time: ', 11780)
+('calculation_time: ', 18452)
+('upload_time: ', 13780)
+('execution_time: ', 46338)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py sq_8kx8k_bs4k sq_8kx8k_bs4k-2
+Getting all keys
+['sq_8kx8k_bs4k/m_0_0.npy', 'sq_8kx8k_bs4k/m_0_1.npy', 'sq_8kx8k_bs4k/m_1_0.npy', 'sq_8kx8k_bs4k/m_1_1.npy']
+['sq_8kx8k_bs4k-2/m_0_0.npy', 'sq_8kx8k_bs4k-2/m_0_1.npy', 'sq_8kx8k_bs4k-2/m_1_0.npy', 'sq_8kx8k_bs4k-2/m_1_1.npy']
+Downloading matrix A
+Downloading matrix B
+Building matrices
+performing calculation
+Splitting result
+uploading results
+('download_time: ', 14993)
+('calculation_time: ', 18195)
+('upload_time: ', 12207)
+('execution_time: ', 47739)
+
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 13613)
+('calculation_time: ', 17951)
+('upload_time: ', 13294)
+('execution_time: ', 46593)
+
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 25069)
+('calculation_time: ', 17905)
+('upload_time: ', 16640)
+('execution_time: ', 61350)
+
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 16 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 48513)
+('calculation_time: ', 142443)
+('upload_time: ', 55709)
+('execution_time: ', 253657)
+
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 16 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 63554)
+('calculation_time: ', 142421)
+('upload_time: ', 55351)
+('execution_time: ', 268266)
+
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 16 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 57915)
+('calculation_time: ', 142497)
+('upload_time: ', 55195)
+('execution_time: ', 262547)
+
+----------------
+---------------
+m4.16xlarge
+----------------
+---------------
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 2 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 2452)
+('calculation_time: ', 45)
+('upload_time: ', 816)
+('execution_time: ', 3415)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 2 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 2062)
+('calculation_time: ', 83)
+('upload_time: ', 880)
+('execution_time: ', 3128)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 4 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 4037)
+('calculation_time: ', 321)
+('upload_time: ', 4786)
+('execution_time: ', 9590)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 4 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 5402)
+('calculation_time: ', 317)
+('upload_time: ', 4098)
+('execution_time: ', 10283)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 36712)
+('calculation_time: ', 1719)
+('upload_time: ', 19067)
+('execution_time: ', 59389)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 1
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 35733)
+('calculation_time: ', 1705)
+('upload_time: ', 20679)
+('execution_time: ', 60024)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 14843)
+('calculation_time: ', 1658)
+('upload_time: ', 13159)
+('execution_time: ', 31561)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 2
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 11293)
+('calculation_time: ', 1678)
+('upload_time: ', 12688)
+('execution_time: ', 27554)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 11113)
+('calculation_time: ', 1652)
+('upload_time: ', 46614)
+('execution_time: ', 61196)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 8248)
+('calculation_time: ', 1737)
+('upload_time: ', 9352)
+('execution_time: ', 21179)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 8 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 8777)
+('calculation_time: ', 1702)
+('upload_time: ', 9964)
+('execution_time: ', 22263)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 16 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 34620)
+('calculation_time: ', 11151)
+('upload_time: ', 37362)
+('execution_time: ', 90398)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 16 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 32986)
+('calculation_time: ', 11145)
+('upload_time: ', 55882)
+('execution_time: ', 107194)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 16 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 36774)
+('calculation_time: ', 11167)
+('upload_time: ', 51205)
+('execution_time: ', 106380)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 32 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 113715)
+('calculation_time: ', 83896)
+('upload_time: ', 242549)
+('execution_time: ', 469343)
+
+[ec2-user@ip-172-31-21-255 ~]$ python ec2_benchmark.py 32 4
+Getting all keys and download matrices
+Building matrices
+performing calculation
+Splitting and uploading result
+('download_time: ', 124579)
+('calculation_time: ', 83261)
+('upload_time: ', 265931)
+('execution_time: ', 503051)

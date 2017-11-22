@@ -61,6 +61,17 @@ functions:
     memorySize: 1536
     timeout: 300
 
+  lambda_benchmark:
+    handler: lambda_benchmark.benchmark
+    package:
+      include:
+        - lib/**
+        - numpy/**
+        - numpy-1.13.0-py2.7.egg-info/**
+        - lambda_benchmark.*
+    memorySize: 1536
+    timeout: 300
+
   strassen:
     handler: strassen.handler
     package:

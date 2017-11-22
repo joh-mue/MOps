@@ -77,7 +77,6 @@ def handler(event, context):
     s3_upload_time += start - end
     aws.cleanup_tmp()
 
-
     X = x_1_1(op_meta_data)
     start = context.get_remaining_time_in_millis()
     aws.write_to_s3(X, result['bucket'], result['folder'], base.format("11"), s3_client)

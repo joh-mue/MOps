@@ -10,26 +10,30 @@ sfn_client = boto3.client('stepfunctions')
 
 '''
 {
-    "state_machine_name": "multiplication-name",
-    "executionName": "execution-name",
-    "matA": {
-    "bucket": "jmue-matrix-tests",
-    "key": "sc4000",
-    "rows": 4000,
-    "columns": 4000
+    'state-machine-name': state_machine_name,
+    'executionName': executionName,
+    'matA': {
+        'bucket': BUCKET,
+        'folder': name_matrixA,
+        'block-size': block_size,
+        'rows': matrix_dimensions.height,
+        'columns': matrix_dimensions.width
     },
-    "matB": {
-      "bucket": "jmue-matrix-tests",
-      "key": "sc4000t",
-      "rows": 4000,
-      "columns": 4000
+    'matB': {
+        'bucket': BUCKET,
+        'folder': name_matrixB,
+        'block-size': block_size,
+        'rows': matrix_dimensions.height,
+        'columns': matrix_dimensions.height
     },
-    "result": {
-      "bucket": "jmue-matrix-tests",
-      "key": "sc4000-result"
+    'result': {
+        'bucket': BUCKET,
+        'folder': name_matrixA + '-result',
+        'block-size': block_size
     },
-    "split_size": 2000
+    'split-size': block_size * 2
 }
+
 '''
 
 def handler(event, context):

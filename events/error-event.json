@@ -1,44 +1,120 @@
 {
-  "stateMachineArn": "arn:aws:states:eu-central-1:146904559692:stateMachine:dual-unit-matrix-multiplication",
-  "executionName": "split3-execution-4",
-  "matA": {
-    "bucket": "jmue-matrix-tests",
-    "folder": "sc4000",
-    "rows": 4000,
-    "columns": 4000,
-    "split": {
-      "x1": 2000,
-      "y1": 2000,
-      "x2": 4000,
-      "y2": 4000
-    }
-  },
+  "executionName": "v4_8k_bs4k-8kx8k",
+  "split-size": 8000,
+  "state-machine-name": "v4_8k_bs4k-8kx8k",
   "matB": {
-    "bucket": "jmue-matrix-tests",
-    "folder": "sc4000transp",
-    "rows": 4000,
-    "columns": 4000,
-    "split": {
-      "x1": 2000,
-      "y1": 2000,
-      "x2": 4000,
-      "y2": 4000
-    }
+    "folder": "sq_8kx8k_bs4k-2",
+    "rows": 8000,
+    "bucket": "jmue-multiplication-benchmarks",
+    "columns": 8000
   },
   "result": {
-    "bucket": "jmue-matrix-tests",
-    "folder": "sc4000-result"
+    "folder": "sq_8kx8k_bs4k-result",
+    "bucket": "jmue-multiplication-benchmarks",
+    "split": {
+      "y": 0,
+      "x": 0
+    }
   },
-  "split-size": 2000,
-  "split": 3,
-  "unit": "0",
+  "matA": {
+    "folder": "sq_8kx8k_bs4k",
+    "rows": 8000,
+    "bucket": "jmue-multiplication-benchmarks",
+    "columns": 8000
+  },
+  "split": 0,
+  "unit": 0,
   "responses": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
+    {
+      "intermediate": 0,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299999,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 3053,
+        "execution": 93816,
+        "s3-down": 15955,
+        "lambda": "intermediate"
+      }
+    },
+    {
+      "intermediate": 1,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299999,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 3743,
+        "execution": 100414,
+        "s3-down": 17251,
+        "lambda": "intermediate"
+      }
+    },
+    {
+      "intermediate": 2,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299999,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 3396,
+        "execution": 86481,
+        "s3-down": 8248,
+        "lambda": "intermediate"
+      }
+    },
+    {
+      "intermediate": 3,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299997,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 3870,
+        "execution": 101397,
+        "s3-down": 16230,
+        "lambda": "intermediate"
+      }
+    },
+    {
+      "intermediate": 4,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299994,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 3443,
+        "execution": 98206,
+        "s3-down": 14141,
+        "lambda": "intermediate"
+      }
+    },
+    {
+      "intermediate": 5,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299999,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 3054,
+        "execution": 96107,
+        "s3-down": 15914,
+        "lambda": "intermediate"
+      }
+    },
+    {
+      "intermediate": 6,
+      "split": 0,
+      "deploy-nr": "INT201",
+      "remaining_time_at_exec_start": 299999,
+      "unit": 0,
+      "time-profile": {
+        "s3-up": 2540,
+        "execution": 94555,
+        "s3-down": 15836,
+        "lambda": "intermediate"
+      }
+    }
   ]
 }

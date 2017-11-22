@@ -1,0 +1,27 @@
+{
+  "state-machine-name": "v4_to10_bs4k-8kx8k",
+  "executionName": "v4_to10_bs4k-8kx8k",
+  "matA": {
+    "bucket": "jmue-multiplication-benchmarks",
+    "columns": 8000,
+    "folder": "sq_8kx8k_bs2k",
+    "rows": 8000
+  },
+  "matB": {
+    "bucket": "jmue-multiplication-benchmarks",
+    "columns": 8000,
+    "folder": "sq_8kx8k_bs2k-2",
+    "rows": 8000
+  },
+  "result": {
+    "bucket": "jmue-multiplication-benchmarks",
+    "folder": "sq_8kx8k_bs2k-result",
+    "split": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "split": 0,
+  "unit": 0,
+  "split-size": 4000
+}

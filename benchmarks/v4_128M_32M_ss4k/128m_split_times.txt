@@ -1,0 +1,5 @@
+splitnr,total_time
+split0,44170
+split1,40506
+split2,36974
+split3,43842

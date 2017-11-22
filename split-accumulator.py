@@ -19,7 +19,7 @@ if platform.system() != 'Darwin': # don't do this on my local machine
 import numpy as np
 ### NUMPY, SCIPY, SKLEARN MAGIC END
 
-deploy_nr = 'ACC105'
+deploy_nr = 'ACC106'
 
 s3_client = boto3.client('s3')
 
@@ -32,6 +32,7 @@ accumulate.json
 }
 '''
 def accumulate(event, context):
+    aws.cleanup_tmp()
     execution_start = context.get_remaining_time_in_millis()
     s3_download_time, s3_upload_time = 0, 0
 
@@ -56,6 +57,7 @@ def accumulate(event, context):
                 key='m_{}_{}'.format(index.x, index.y),
                 s3_client=s3_client)
         s3_upload_time += upload_start - context.get_remaining_time_in_millis()
+        aws.cleanup_tmp()
 
     execution_time = execution_start - context.get_remaining_time_in_millis()
     aws.cleanup_tmp()

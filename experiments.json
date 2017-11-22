@@ -1,0 +1,58 @@
+{
+  "experiments": [
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "split-size":8000,
+                  "matA":{"height":16000, "width":16000},
+                  "matB":{"height":16000, "width":16000},
+                  "block-size":4000
+                },
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "split-size":8000,
+                  "matA":{"height":8000, "width":8000},
+                  "matB":{"height":8000, "width":8000},
+                  "block-size":4000
+                },
+
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "split-size":4000,
+                  "matA":{"height":4000, "width":4000},
+                  "matB":{"height":4000, "width":4000},
+                  "block-size":2000
+                },
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "matA":{"height":8000, "width":8000},
+                  "matB":{"height":8000, "width":8000},
+                  "split-size":2000,
+                  "block-size":1000
+                },
+
+
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "matA":{"height":4000, "width":4000},
+                  "matB":{"height":4000, "width":4000},
+                  "split-size":4000,
+                  "block-size":2000
+                },
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "matA":{"height":4000, "width":4000},
+                  "matB":{"height":4000, "width":4000},
+                  "split-size":2000,
+                  "block-size":1000
+                },
+
+
+                {
+                  "sfn_prefix": "v4a_suite",
+                  "matA":{"height":2000, "width":2000},
+                  "matB":{"height":2000, "width":2000},
+                  "split-size":2000,
+                  "block-size":1000
+                }
+                ]
+}

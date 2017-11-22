@@ -1,6 +1,7 @@
 import boto3
 import json
 import aws
+import time
 
 from collections import namedtuple
 
@@ -23,19 +24,16 @@ def handler(event, context):
   columns = event['columns']
   rows = event['rows']
 
-  time = context.get_remaining_time_in_millis()
+  generation_start_time = time.time()
   matA = np.random.random_sample((columns, rows))
   matB = np.random.random_sample((columns, rows))
-  time -= context.get_remaining_time_in_millis()
+  generation_time = time.time() - generation_start_time
 
-  event["generating matrices"] = time
-
-  time = context.get_remaining_time_in_millis()
+  calc_start_time = time.time()
   matA.dot(matB)
-  time -= context.get_remaining_time_in_millis()
+  calc_time = time.time() - calc_start_time
 
-  event["calculation"] = time
-  event["remaining"] = context.get_remaining_time_in_millis()
-
+  event["generating matrices"] = int(generation_time * 1000)
+  event["calculation"] = int(calc_time * 1000)
   return event
 

@@ -71,6 +71,7 @@ def create_blocks_with_random(x, y, block_height, block_width, matrix_name):
 
 def get_block_with_random(height, width):
     return np.random.random_sample((height,width))
+    # return np.random.random_integers(low=1, high=100, size=(height,width))
 
 def write_block_to_file(block, directory, row, column):
     if not os.path.exists(directory):
@@ -234,7 +235,8 @@ def create_plots_per_lambda(csv_path, state_machine_name, to_file=True):
         if (any(map(lambda x: len(x) == 0, lambda_timings))):
             _log('[Warning] Timings for {}-lambdas incomplete. Skipping plotting.'.format(l_type))
         else:
-            plot_time_profile(with_average(lambda_timings), l_type, state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound, xbound=xbound)
+            # plot_time_profile(with_average(lambda_timings), l_type, state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound, xbound=xbound)
+            plot_time_profile(lambda_timings, l_type, state_machine_name, os.path.dirname(csv_path), to_file, ybound=ybound, xbound=xbound)
             plot_time_distribution(lambda_timings, l_type, state_machine_name, os.path.dirname(csv_path), to_file)
 
 def create_combined_plots(csv_path, state_machine_name, to_file=True):
@@ -260,10 +262,10 @@ def load_timings(csv_path, lambda_type=None):
         up, down, calculation = [], [], []
         for row in reader:
             if lambda_type == None or lambda_type == row['type']:
-                up.append(row['up'])
-                down.append(row['down'])
-                calculation.append(int(row['execution']) - int(row['down']) - int(row['up']))
-    return Timings(down=np.array(down, dtype=int), up=np.array(up, dtype=int), calculation=np.array(calculation, dtype=int))
+                up.append(float(row['up'])/1000.0)
+                down.append(float(row['down'])/1000.0)
+                calculation.append((int(row['execution']) - int(row['down']) - int(row['up']))/1000.0)
+    return Timings(down=np.array(down, dtype=float), up=np.array(up, dtype=float), calculation=np.array(calculation, dtype=float))
 
 def with_average(timings):
     down = np.append(timings.down, np.average(timings.down))
@@ -278,8 +280,8 @@ def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, t
     index = np.arange(N)    # the x locations for the groups
     width = 0.5           # the width of the bars: can also be len(x) sequence
 
-    # matplotlib.rcParams.update({'font.size': 15})
-    # matplotlib.rcParams.update({'figure.autolayout': True})
+    matplotlib.rcParams.update({'font.size': 15})
+    matplotlib.rcParams.update({'figure.autolayout': True})
 
     fig, ax = plt.subplots()
 
@@ -292,10 +294,10 @@ def plot_time_profile(timings, lambda_type, state_machine_name, plot_dir=None, t
     if xbound is not None:
         ax.set_xbound(-0.5, xbound) # number of intermediate lambdas?
 
-    ax.set_ylabel('time in ms')
-    ax.set_xlabel('execution index, last one is averages across executions')
+    ax.set_ylabel('time in s')
+    ax.set_xlabel('execution index')#, last one is averages across executions')
     # ax.set_title('Timing profiles for {}-lambda executions.'.format(lambda_type))
-    ax.legend((p3, p2, p1), ('Calculation', 'S3 upload','S3 download'), loc=4)
+    ax.legend((p3, p2, p1), ('Calculation', 'Upload','Download'), loc=2)
 
     if to_file:
         plot_path = '{}/{}_{}_profile.png'.format(plot_dir, state_machine_name, lambda_type)
@@ -309,12 +311,13 @@ def plot_time_distribution(timings, lambda_type, state_machine_name, plot_dir, t
 
     up_avg, down_avg, calc_avg = np.average(timings.up), np.average(timings.down), np.average(timings.calculation)
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
-    labels = 'S3 upload\n({}ms)'.format(int(up_avg)), 'S3 download\n({}ms)'.format(int(down_avg)), 'calculation\n({}ms)'.format(int(calc_avg))
+    labels = 'Upload\n({}s)'.format(int(up_avg)), 'Download\n({}s)'.format(int(down_avg)), 'Calculation\n({}s)'.format(int(calc_avg))
     sizes = [up_avg, down_avg, calc_avg]
     explode = (0, 0, 0.1)  # only "explode" the 3nd slice
 
-    # matplotlib.rcParams.update({'font.size': 15})
-    # matplotlib.rcParams.update({'figure.autolayout': True})
+    matplotlib.rcParams.update({'font.size': 15})
+    matplotlib.rcParams.update({'figure.autolayout': True})
+
 
     fig1, ax = plt.subplots()
     ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%', shadow=False, startangle=90, colors=['c','b','m'])
@@ -369,15 +372,18 @@ if __name__ == "__main__":
 
     block_sizes = [4000]
     split_size = 8000
+    _log('split size: {}'.format(split_size))
 
     _log('\nBenchmark Parameters:\n  BUCKET:{}\n  PREFIX:{}\n  BENCHMARKS_FOLDER:{}\n  SFN_PREFIX:{}'.format(
                                    BUCKET, PREFIX, BENCHMARKS_FOLDER, SFN_PREFIX))
 
     matrix_dimension_sets = [
+            # MatrixDimensions(height=1000, width=1000),
             # MatrixDimensions(height=2000, width=2000),
             # MatrixDimensions(height=3000, width=3000),
             # MatrixDimensions(height=4000, width=4000),
-            MatrixDimensions(height=16000, width=16000),
+            # MatrixDimensions(height=8000, width=8000)
+            MatrixDimensions(height=32000, width=32000),
             # MatrixDimensions(height=10000, width=10000)#,
             # MatrixDimensions(height=12000, width=12000)
             ]
